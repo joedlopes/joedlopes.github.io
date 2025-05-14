@@ -1,0 +1,1631 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Gradient Descent Visualization Tutorial | 3D Function Optimization Examples</title>
+    <meta name="description"
+        content="Explore and learn about gradient descent algorithms (Standard, Momentum, ADAM) interactively with this 3D visualization tool. See optimization paths on various mathematical functions like Himmelblau, Paraboloid, and Rastrigin. A visual tutorial for understanding optimization.">
+    <meta name="keywords"
+        content="gradient descent, optimization, 3D visualization, interactive tutorial, machine learning, deep learning, mathematical functions, Himmelblau, Rastrigin, Paraboloid, ADAM optimizer, Momentum optimizer, learning tool, data science education">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://joedlopes.github.io/">
+    <meta property="og:title" content="Interactive Gradient Descent Visualization Tutorial">
+    <meta property="og:description"
+        content="Visually explore gradient descent algorithms (Standard, Momentum, ADAM) on 3D mathematical functions. An interactive learning tool.">
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://joedlopes.github.io/">
+    <meta property="twitter:title" content="Interactive Gradient Descent Visualization Tutorial">
+    <meta property="twitter:description"
+        content="Visually explore gradient descent algorithms (Standard, Momentum, ADAM) on 3D mathematical functions. An interactive learning tool.">
+    <style>
+        /* Basic styling for the page and controls */
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        canvas#threeCanvas {
+            /* Give ID to three.js canvas */
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        #controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(30, 30, 30, 0.93);
+            padding: 10px;
+            border-radius: 8px;
+            color: #e0e0e0;
+            max-height: calc(100vh - 100px);
+            /* Adjusted for potential scroll on desktop */
+            width: 320px;
+            overflow-y: auto;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+            font-size: 13px;
+            transition: left 0.3s ease-in-out;
+            /* For mobile slide-in */
+        }
+
+        #controls h4 {
+            margin-top: 5px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 6px;
+            font-size: 15px;
+            color: #00aaff;
+        }
+
+        /* General rule for control elements - input, select, button will be block by default */
+        #controls label,
+        #controls input,
+        #controls button,
+        #controls select,
+        #controls .info-text {
+            margin-bottom: 8px;
+            display: block;
+            font-size: 13px;
+        }
+
+        /* Specific styling for text-based inputs, ranges, and selects */
+        #controls input[type="number"],
+        #controls input[type="range"],
+        #controls select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 6px;
+            border-radius: 3px;
+            border: 1px solid #444;
+            background-color: #2a2a2a;
+            color: #e0e0e0;
+        }
+
+        #controls input[type="number"] {
+            padding: 7px;
+        }
+
+
+        /* Styling for checkbox groups using Flexbox for alignment */
+        #controls .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        #controls .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin: 0 6px 0 0;
+            padding: 0;
+            flex-shrink: 0;
+        }
+
+        #controls .checkbox-group label {
+            margin-bottom: 0;
+            width: auto;
+            flex-grow: 1;
+        }
+
+
+        #controls button {
+            padding: 7px 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease;
+            font-weight: bold;
+            margin-right: 5px;
+            display: inline-block;
+        }
+
+        #controls button:hover {
+            background-color: #0056b3;
+            transform: translateY(-1px);
+        }
+
+        #controls button:active {
+            transform: translateY(0px);
+        }
+
+        #controls button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+
+        #controls .param-value,
+        #controls .info-value {
+            font-weight: bold;
+            color: #87CEFA;
+            margin-left: 5px;
+        }
+
+        #controls .button-group {
+            margin-top: 10px;
+            margin-bottom: 12px;
+        }
+
+        /* Tab Styles */
+        .tab-buttons,
+        .optimizer-tab-buttons {
+            overflow: hidden;
+            border-bottom: 1px solid #444;
+            margin-bottom: 10px;
+        }
+
+        .tab-buttons button,
+        .optimizer-tab-buttons button {
+            background-color: inherit;
+            float: left;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 8px 10px;
+            transition: 0.3s;
+            font-size: 13px;
+            color: #ccc;
+            border-radius: 4px 4px 0 0;
+            margin-right: 2px;
+        }
+
+        .tab-buttons button:hover,
+        .optimizer-tab-buttons button:hover {
+            background-color: #444;
+            color: #fff;
+        }
+
+        .tab-buttons button.active,
+        .optimizer-tab-buttons button.active {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .tab-content,
+        .optimizer-tab-content {
+            display: none;
+            padding: 6px 0;
+        }
+
+        .tab-content.active,
+        .optimizer-tab-content.active {
+            display: block;
+        }
+
+
+        input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            height: 8px;
+            background: #555;
+            border-radius: 4px;
+        }
+
+        input[type=range]::-moz-range-track {
+            height: 8px;
+            background: #555;
+            border-radius: 4px;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            margin-top: -4px;
+            background-color: #007bff;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+        }
+
+        input[type=range]::-moz-range-thumb {
+            background-color: #007bff;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            border: none;
+        }
+
+        #functionInfo {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(30, 30, 30, 0.85);
+            color: #f0f0f0;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            text-align: center;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            min-width: 300px;
+        }
+
+        #functionInfo p {
+            margin: 2px 0;
+        }
+
+        #functionInfo .name {
+            font-weight: bold;
+            color: #00aaff;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        #colorbarContainer {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(30, 30, 30, 0.85);
+            padding: 5px;
+            border-radius: 5px;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            color: #f0f0f0;
+            font-size: 12px;
+        }
+
+        #colorbarCanvas {
+            width: 256px;
+            height: 20px;
+            border: 1px solid #555;
+            margin: 0 10px;
+        }
+
+        #colorbarMin,
+        #colorbarMax {
+            min-width: 40px;
+            text-align: center;
+        }
+
+        /* Copyright Styling */
+        #copyrightInfo {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            font-size: 12px;
+            color: #aaa;
+            z-index: 5;
+            /* Below controls but above canvas */
+            background: rgba(30, 30, 30, 0.7);
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
+        #copyrightInfo a {
+            color: #00aaff;
+            text-decoration: none;
+        }
+
+        #copyrightInfo a:hover {
+            text-decoration: underline;
+        }
+
+        /* Menu Button Styling */
+        #menuButtonContainer {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 101;
+            display: none;
+        }
+
+        #menuButton {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            /* Ensure enough space for arrows */
+            font-size: 18px;
+            /* Adjust font size for arrows if needed */
+            line-height: 1;
+            /* Helps align arrows vertically */
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            width: 40px;
+            /* Fixed width for consistent arrow display */
+            text-align: center;
+        }
+
+        #menuButton:hover {
+            background-color: #0056b3;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            #controls {
+                position: fixed;
+                left: -350px;
+                top: 0;
+                width: 300px;
+                height: 100%;
+                max-height: 100vh;
+                z-index: 100;
+                box-sizing: border-box;
+                /* Include padding in width/height calculation */
+            }
+
+            #controls.open {
+                left: 0;
+                padding-top: 60px;
+                /* Add padding to prevent content overlap with fixed button */
+            }
+
+            #menuButtonContainer {
+                display: block !important;
+            }
+
+            #functionInfo {
+                font-size: 11px;
+                padding: 4px 8px;
+                min-width: auto;
+                max-width: calc(100vw - 20px);
+            }
+
+            #functionInfo .name {
+                font-size: 13px;
+            }
+
+            #colorbarContainer {
+                font-size: 10px;
+                padding: 3px;
+                bottom: 5px;
+            }
+
+            #colorbarCanvas {
+                width: 150px;
+                height: 15px;
+            }
+
+            #colorbarMin,
+            #colorbarMax {
+                min-width: 25px;
+                font-size: 9px;
+            }
+
+            #copyrightInfo {
+                font-size: 10px;
+                padding: 2px 5px;
+                bottom: 5px;
+                right: 5px;
+            }
+        }
+    </style>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "LearningResource",
+      "name": "Interactive Gradient Descent Visualization Tutorial",
+      "description": "Explore and learn about gradient descent algorithms (Standard, Momentum, ADAM) interactively with this 3D visualization tool. See optimization paths on various mathematical functions like Himmelblau, Paraboloid, and Rastrigin. A visual tutorial for understanding optimization.",
+      "learningResourceType": "interactive simulation",
+      "interactivityType": "active",
+      "educationalUse": ["demonstration", "learning", "tutorial"],
+      "keywords": "gradient descent, optimization, 3D visualization, machine learning, deep learning, mathematical functions, Himmelblau, Rastrigin, Paraboloid, ADAM optimizer, Momentum optimizer",
+      "author": {
+        "@type": "Person",
+        "name": "Joed",
+        "url": "https://joedlopes.github.io"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "Joed",
+        "url": "https://joedlopes.github.io"
+      },
+      "isAccessibleForFree": true,
+      "browserRequirements": "Requires JavaScript and WebGL support.",
+       "applicationCategory": "EducationApplication",
+       "operatingSystem": "All (web-based)"
+    }
+    </script>
+</head>
+
+<body>
+    <div id="menuButtonContainer">
+        <button id="menuButton">&#x25B6;</button>
+    </div>
+
+    <div id="functionInfo">
+        <p class="name" id="functionNameDisplay">Himmelblau Function</p>
+        <p id="functionFormulaDisplay">$f(x, y) = (x^2 + y - 11)^2 + (x + y^2 - 7)^2$</p>
+    </div>
+
+    <div id="controls">
+        <div class="tab-buttons">
+            <button class="tab-button active" onclick="openTab(event, 'terrainTab')">Function</button>
+            <button class="tab-button" onclick="openTab(event, 'gdTabContainer')">Gradient Descent</button>
+        </div>
+
+        <div id="terrainTab" class="tab-content active">
+            <h4>Function Settings</h4>
+            <div>
+                <label for="functionSelect">Select Function:</label>
+                <select id="functionSelect"></select>
+            </div>
+            <div>
+                <label for="colormapSelect">Select Colormap:</label>
+                <select id="colormapSelect"></select>
+            </div>
+            <div>
+                <label for="heightScale">Height Scale: <span id="heightScaleValue"
+                        class="param-value">3.0</span></label>
+                <input type="range" id="heightScale" min="0.1" max="20" step="0.1" value="3"
+                    title="Multiplier for the function plot's verticality.">
+            </div>
+            <div>
+                <label for="terrainSize">Function Plot Range (X & Z): <span id="terrainSizeValue"
+                        class="param-value">20.0</span></label>
+                <input type="range" id="terrainSize" min="5" max="40" step="1" value="20"
+                    title="Width and depth of the function plot in world units.">
+            </div>
+            <div>
+                <label for="surfaceAlpha">Surface Alpha: <span id="surfaceAlphaValue"
+                        class="param-value">1.0</span></label>
+                <input type="range" id="surfaceAlpha" min="0.0" max="1.0" step="0.01" value="1.0"
+                    title="Transparency of the function surface.">
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="useHeightColormap" checked>
+                <label for="useHeightColormap" title="Color function plot based on height (f(x,y) value).">Use Height
+                    Colormap</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="visualizeMinima" checked>
+                <label for="visualizeMinima" title="Highlight known local minima on the function plot.">Visualize
+                    Minima</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="showContourLines" checked>
+                <label for="showContourLines" title="Display contour lines on the function plot.">Show Contour
+                    Lines</label>
+            </div>
+            <div>
+                <label for="numContourLines">Num Contour Lines: <span id="numContourLinesValue"
+                        class="param-value">20</span></label>
+                <input type="range" id="numContourLines" min="2" max="50" step="1" value="20"
+                    title="Number of contour lines.">
+            </div>
+            <button id="regenerateTerrainButton" title="Apply changes and regenerate the function plot.">Regenerate
+                Function Plot</button>
+        </div>
+
+        <div id="gdTabContainer" class="tab-content">
+            <h4>Gradient Descent Settings</h4>
+            <div>
+                <label for="gdStartX">Start X (func): <span id="gdStartXValue" class="param-value">-4.0</span></label>
+                <input type="range" id="gdStartX" min="-5" max="5" step="0.1" value="-4"
+                    title="Initial X position in function space for gradient descent.">
+            </div>
+            <div>
+                <label for="gdStartY">Start Y (func): <span id="gdStartYValue" class="param-value">-4.0</span></label>
+                <input type="range" id="gdStartY" min="-5" max="5" step="0.1" value="-4"
+                    title="Initial Y position in function space for gradient descent.">
+            </div>
+            <div>
+                <label for="gdNumSteps">Num Steps (Play): <span id="gdNumStepsValue"
+                        class="param-value">10</span></label>
+                <input type="range" id="gdNumSteps" min="1" max="100" step="1" value="10"
+                    title="Number of gradient descent iterations for the 'Play' button.">
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="showGradientArrows" checked>
+                <label for="showGradientArrows" title="Show or hide the gradient descent path arrows.">Show Path
+                    Arrows</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="showCurrentGradientVector" checked>
+                <label for="showCurrentGradientVector"
+                    title="Show the current gradient vector at the Start X/Y position.">Show Live Gradient</label>
+            </div>
+
+            <hr style="border-color: #444; margin: 15px 0;">
+            <h4>Optimizer Type & Parameters</h4>
+            <div class="optimizer-tab-buttons">
+                <button class="optimizer-tab-button active" onclick="openOptimizerTab(event, 'standardOptTab')">Standard
+                    GD</button>
+                <button class="optimizer-tab-button"
+                    onclick="openOptimizerTab(event, 'momentumOptTab')">Momentum</button>
+                <button class="optimizer-tab-button" onclick="openOptimizerTab(event, 'adamOptTab')">ADAM</button>
+            </div>
+
+            <div id="standardOptTab" class="optimizer-tab-content active">
+                <label for="vanillaGdStepSize">Step Size (Learning Rate): <span id="vanillaGdStepSizeValue"
+                        class="param-value">0.010</span></label>
+                <input type="range" id="vanillaGdStepSize" min="0.001" max="1.0" step="0.001" value="0.01">
+            </div>
+            <div id="momentumOptTab" class="optimizer-tab-content">
+                <label for="momentumBeta">Beta (Momentum Factor): <span id="momentumBetaValue"
+                        class="param-value">0.9</span></label>
+                <input type="range" id="momentumBeta" min="0.0" max="0.99" step="0.01" value="0.9">
+                <label for="momentumStepSize">Step Size (Learning Rate): <span id="momentumStepSizeValue"
+                        class="param-value">0.010</span></label>
+                <input type="range" id="momentumStepSize" min="0.001" max="1.0" step="0.001" value="0.01">
+            </div>
+            <div id="adamOptTab" class="optimizer-tab-content">
+                <label for="adamBeta1">Beta1 (Adam): <span id="adamBeta1Value" class="param-value">0.9</span></label>
+                <input type="range" id="adamBeta1" min="0.0" max="0.999" step="0.001" value="0.9">
+                <label for="adamBeta2">Beta2 (Adam): <span id="adamBeta2Value" class="param-value">0.999</span></label>
+                <input type="range" id="adamBeta2" min="0.0" max="0.9999" step="0.0001" value="0.999">
+                <label for="adamEpsilon">Epsilon (Adam): <span id="adamEpsilonValue"
+                        class="param-value">1e-8</span></label>
+                <input type="number" id="adamEpsilon" step="1e-9" value="1e-8"
+                    title="Small constant for numerical stability in ADAM optimizer.">
+                <label for="adamStepSize">Step Size (Learning Rate): <span id="adamStepSizeValue"
+                        class="param-value">0.010</span></label>
+                <input type="range" id="adamStepSize" min="0.001" max="1.0" step="0.001" value="0.01">
+            </div>
+
+            <hr style="border-color: #444; margin: 15px 0;">
+            <div class="button-group">
+                <button id="gdPlayButton" title="Run multiple gradient descent iterations.">Play Optimization</button>
+                <button id="gdNextStepButton" title="Run a single gradient descent iteration.">Next Step</button>
+                <button id="gdResetButton" title="Reset gradient descent to start position and clear path.">Reset
+                    Optimization</button>
+            </div>
+            <div class="info-text">Current Function Value f(x,y): <span id="gdCurrentValue"
+                    class="info-value">N/A</span></div>
+        </div>
+    </div>
+
+    <div id="colorbarContainer"> <span id="colorbarMin">Min f(x,y)</span>
+        <canvas id="colorbarCanvas"></canvas>
+        <span id="colorbarMax">Max f(x,y)</span>
+    </div>
+    <canvas id="threeCanvas"></canvas>
+
+    <div id="copyrightInfo">
+        <p>&copy; <a href="https://joedlopes.github.io" target="_blank" rel="noopener noreferrer author">Joed</a> -
+            Gradient Descent Visualizer</p>
+    </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // --- Global Variables ---
+        let scene, camera, renderer, controls, clock;
+        let terrainMesh; // Represents the 3D function plot
+        let gdArrowHelpers = []; // Stores arrows for the GD path
+        let gdCurrentMarker = null; // Sphere marking the current GD position
+        let contourLinesGroup = new THREE.Group(); // Group for contour lines
+        let liveGradientArrow = null; // Arrow showing potential next step from start
+
+        let gdPlayTimeoutId = null; // For setTimeout of GD "Play"
+        let isGdPlaying = false; // Flag for GD "Play" state
+
+        // --- Configuration Parameters ---
+        const params = {
+            currentFunctionKey: 'himmelblau', // Default function
+            currentColormapKey: 'jet',       // Default colormap
+            currentOptimizerKey: 'standard', // Default optimizer
+            resolution: 200,                 // Segments for the function plot geometry
+            heightScale: 3,                  // Multiplier for function plot height
+            terrainSize: 20,                 // Width/depth of the function plot
+            surfaceAlpha: 1.0,               // Transparency of the plot surface
+            functionInputMinX: -5,           // Domain for function evaluation
+            functionInputMaxX: 5,
+            functionInputMinY: -5,
+            functionInputMaxY: 5,
+            useHeightColormap: true,         // Color plot by f(x,y) value
+            visualizeMinima: true,           // Highlight known minima
+            defaultTerrainColor: new THREE.Color(0x888888), // Fallback color
+            minimaHighlightColor: new THREE.Color(0xff0000), // Color for minima
+            minimaDetectionRadius: 0.3,      // Radius to detect minima for highlighting
+            terrainMinHeight: 0,             // Min raw function value (updated dynamically)
+            terrainHeightRange: 1,           // Range of raw function values (updated)
+            worldMinY: 0,                    // Min Y in world coords (updated)
+            worldMaxY: 0,                    // Max Y in world coords (updated)
+            showContourLines: true,
+            numContourLines: 20,
+            contourLineColor: 0xcccccc,
+            contourLineWidth: 1,
+            gdStartX: -4.0,                  // Initial X for Gradient Descent
+            gdStartY: -4.0,                  // Initial Y for Gradient Descent
+            gdCurrentX: -4.0,                // Current X in GD path
+            gdCurrentY: -4.0,                // Current Y in GD path
+            gdNumSteps: 10,                  // Steps for GD "Play"
+            gdPathPointsFunc: [],            // Array of Vector2 for GD path in function space
+            gdCurrentFuncValue: null,        // Current f(x,y) at GD position
+            arrowColor: 0xffaa00,            // Color for GD path arrows
+            arrowLineWidth: 2,
+            showGradientArrows: true,
+            showCurrentGradientVector: true, // Show potential next step from start
+            liveGradientArrowColor: 0x00ffff,
+
+            // Optimizer specific parameters
+            vanillaGdStepSize: 0.01,
+            momentumStepSize: 0.01,
+            momentumBeta: 0.9,
+            momentumVelocityX: 0,
+            momentumVelocityY: 0,
+            adamStepSize: 0.01,
+            adamBeta1: 0.9,
+            adamBeta2: 0.999,
+            adamEpsilon: 1e-8,
+            adamM_dx: 0, adamM_dy: 0, // 1st moment vector for ADAM
+            adamV_dx: 0, adamV_dy: 0, // 2nd moment vector for ADAM
+            adamT: 0                   // Timestep for ADAM bias correction
+        };
+
+        // --- Mathematical Functions & Their Properties ---
+        const functions = {
+            himmelblau: {
+                name: "Himmelblau Function",
+                formulaTex: "f(x, y) = (x^2 + y - 11)^2 + (x + y^2 - 7)^2",
+                evaluate: (x, y) => {
+                    const term1 = x * x + y - 11;
+                    const term2 = x + y * y - 7;
+                    return term1 * term1 + term2 * term2;
+                },
+                gradient: (x, y) => {
+                    const df_dx = 4 * x * (x * x + y - 11) + 2 * (x + y * y - 7);
+                    const df_dy = 2 * (x * x + y - 11) + 4 * y * (x + y * y - 7);
+                    return new THREE.Vector2(df_dx, df_dy);
+                },
+                domain: { minX: -5, maxX: 5, minY: -5, maxY: 5 },
+                minima: [ // Known local minima
+                    new THREE.Vector2(3.0, 2.0), new THREE.Vector2(-2.805118, 3.131312),
+                    new THREE.Vector2(-3.779310, -3.283186), new THREE.Vector2(3.584428, -1.848126)
+                ]
+            },
+            paraboloid: {
+                name: "Paraboloid (Bowl)",
+                formulaTex: "f(x, y) = x^2 + y^2",
+                evaluate: (x, y) => x * x + y * y,
+                gradient: (x, y) => new THREE.Vector2(2 * x, 2 * y),
+                domain: { minX: -3, maxX: 3, minY: -3, maxY: 3 },
+                minima: [new THREE.Vector2(0, 0)]
+            },
+            rastrigin: {
+                name: "Rastrigin Function",
+                formulaTex: "f(x,y) = 2A + (x^2 - A\\cos(2\\pi x)) + (y^2 - A\\cos(2\\pi y)), A=10",
+                evaluate: (x, y) => {
+                    const A = 10;
+                    return 2 * A + (x * x - A * Math.cos(2 * Math.PI * x)) + (y * y - A * Math.cos(2 * Math.PI * y));
+                },
+                gradient: (x, y) => {
+                    const A = 10;
+                    const df_dx = 2 * x + 2 * Math.PI * A * Math.sin(2 * Math.PI * x);
+                    const df_dy = 2 * y + 2 * Math.PI * A * Math.sin(2 * Math.PI * y);
+                    return new THREE.Vector2(df_dx, df_dy);
+                },
+                domain: { minX: -5.12, maxX: 5.12, minY: -5.12, maxY: 5.12 },
+                minima: [new THREE.Vector2(0, 0)] // Global minimum
+            }
+            // Add more functions here as needed
+        };
+
+        // --- Colormaps for Visualization ---
+        const colormaps = {
+            jet: {
+                name: "Jet",
+                evaluate: (value) => { // value is normalized 0-1
+                    const jetKeyColors = [
+                        new THREE.Color(0, 0, 1),    // Blue
+                        new THREE.Color(0, 1, 1),    // Cyan
+                        new THREE.Color(1, 1, 0),    // Yellow
+                        new THREE.Color(1, 0.5, 0),  // Orange
+                        new THREE.Color(1, 0, 0)     // Red
+                    ];
+                    const numSegments = jetKeyColors.length - 1;
+                    const segmentLength = 1.0 / numSegments;
+                    const segmentIndex = Math.min(Math.floor(value / segmentLength), numSegments - 1);
+                    const t = (value - (segmentIndex * segmentLength)) / segmentLength;
+                    return new THREE.Color().lerpColors(jetKeyColors[segmentIndex], jetKeyColors[segmentIndex + 1], t);
+                }
+            },
+            rainbow: {
+                name: "Rainbow",
+                evaluate: (value) => {
+                    const rainbowKeyColors = [
+                        new THREE.Color(0.5, 0, 1), // Violet
+                        new THREE.Color(0, 0, 1),   // Blue
+                        new THREE.Color(0, 1, 1),   // Cyan
+                        new THREE.Color(0, 1, 0),   // Green
+                        new THREE.Color(1, 1, 0),   // Yellow
+                        new THREE.Color(1, 0.5, 0), // Orange
+                        new THREE.Color(1, 0, 0)    // Red
+                    ];
+                    const numSegments = rainbowKeyColors.length - 1;
+                    const segmentLength = 1.0 / numSegments;
+                    const segmentIndex = Math.min(Math.floor(value / segmentLength), numSegments - 1);
+                    const t = (value - (segmentIndex * segmentLength)) / segmentLength;
+                    return new THREE.Color().lerpColors(rainbowKeyColors[segmentIndex], rainbowKeyColors[segmentIndex + 1], t);
+                }
+            },
+            hot: {
+                name: "Hot",
+                evaluate: (value) => {
+                    const hotKeyColors = [
+                        new THREE.Color(0, 0, 0),      // Black
+                        new THREE.Color(1, 0, 0),      // Red
+                        new THREE.Color(1, 1, 0),      // Yellow
+                        new THREE.Color(1, 1, 1)       // White
+                    ];
+                    const numSegments = hotKeyColors.length - 1;
+                    const segmentLength = 1.0 / numSegments;
+                    const segmentIndex = Math.min(Math.floor(value / segmentLength), numSegments - 1);
+                    const t = (value - (segmentIndex * segmentLength)) / segmentLength;
+                    return new THREE.Color().lerpColors(hotKeyColors[segmentIndex], hotKeyColors[segmentIndex + 1], t);
+                }
+            },
+            hsv: { // Hue cycle
+                name: "HSV (Hue Cycle)",
+                evaluate: (value) => {
+                    return new THREE.Color().setHSL(value, 1.0, 0.5); // Hue, Saturation, Lightness
+                }
+            },
+            tab20: { // Good for discrete levels if needed, but used continuously here
+                name: "Tab20 (Banded)",
+                evaluate: (value) => {
+                    const tab20ColorsHex = [ // From Matplotlib's tab20
+                        0x1f77b4, 0xaec7e8, 0xff7f0e, 0xffbb78, 0x2ca02c, 0x98df8a, 0xd62728, 0xff9896,
+                        0x9467bd, 0xc5b0d5, 0x8c564b, 0xc49c94, 0xe377c2, 0xf7b6d2, 0x7f7f7f, 0xc7c7c7,
+                        0xbcbd22, 0xdbdb8d, 0x17becf, 0x9edae5
+                    ];
+                    // Ensure index is within bounds, even for value = 1.0
+                    const index = Math.min(Math.floor(value * tab20ColorsHex.length), tab20ColorsHex.length - 1);
+                    return new THREE.Color(tab20ColorsHex[index]);
+                }
+            }
+        };
+
+        // --- Initialization and Main Loop ---
+        init();
+        animate();
+
+        // --- UI Tab Switching ---
+        window.openTab = function (evt, tabName) {
+            let i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+                tabcontent[i].classList.remove("active");
+            }
+            tablinks = document.getElementsByClassName("tab-button");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].classList.remove("active");
+            }
+            document.getElementById(tabName).style.display = "block";
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+        window.openOptimizerTab = function (evt, tabName) {
+            let i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("optimizer-tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+                tabcontent[i].classList.remove("active");
+            }
+            tablinks = document.getElementsByClassName("optimizer-tab-button");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].classList.remove("active");
+            }
+            document.getElementById(tabName).style.display = "block";
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+
+            // Update current optimizer and reset GD state
+            if (tabName === 'standardOptTab') params.currentOptimizerKey = 'standard';
+            else if (tabName === 'momentumOptTab') params.currentOptimizerKey = 'momentum';
+            else if (tabName === 'adamOptTab') params.currentOptimizerKey = 'adam';
+
+            resetGradientDescent();
+            updateLiveGradientArrow(); // Reflect new optimizer's potential step
+        }
+
+        // --- Three.js Setup ---
+        function init() {
+            clock = new THREE.Clock();
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x282c34); // Dark background
+            scene.fog = new THREE.Fog(scene.background, params.terrainSize * 2, params.terrainSize * 5); // Fog for depth
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(params.terrainSize * 0.75, params.terrainSize * 0.75, params.terrainSize * 0.75);
+
+            // Renderer
+            const threeCanvas = document.getElementById('threeCanvas');
+            renderer = new THREE.WebGLRenderer({ canvas: threeCanvas, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true; // Enable shadows
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Softer shadows
+
+            // OrbitControls
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.minDistance = 2;
+            controls.maxDistance = params.terrainSize * 3;
+            controls.maxPolarAngle = Math.PI / 2 - 0.01; // Prevent camera going below ground
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+            directionalLight.position.set(params.terrainSize, params.terrainSize * 1.5, params.terrainSize * 0.5);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.mapSize.width = 2048; // Higher res shadow map
+            directionalLight.shadow.mapSize.height = 2048;
+            directionalLight.shadow.camera.near = 0.5;
+            directionalLight.shadow.camera.far = params.terrainSize * 4;
+            const shadowCamSize = params.terrainSize * 1.2;
+            directionalLight.shadow.camera.left = -shadowCamSize;
+            directionalLight.shadow.camera.right = shadowCamSize;
+            directionalLight.shadow.camera.top = shadowCamSize;
+            directionalLight.shadow.camera.bottom = -shadowCamSize;
+            scene.add(directionalLight);
+            // const helper = new THREE.CameraHelper( directionalLight.shadow.camera ); // For debugging shadow camera
+            // scene.add( helper );
+
+            scene.add(contourLinesGroup); // Add contour group to scene
+
+            // Setup UI, initial function, and terrain
+            setupUI();
+            updateFunctionSelection();
+            regenerateTerrainAndGD();
+
+            // Mobile Menu Logic
+            const menuButton = document.getElementById('menuButton');
+            const controlsPanel = document.getElementById('controls');
+            menuButton.addEventListener('click', (event) => {
+                event.stopPropagation();
+                controlsPanel.classList.toggle('open');
+                // Update button icon based on panel state
+                if (controlsPanel.classList.contains('open')) {
+                    menuButton.innerHTML = '&#x25C0;'; // Left arrow (panel is open)
+                } else {
+                    menuButton.innerHTML = '&#x25B6;'; // Right arrow (panel is closed)
+                }
+            });
+            document.addEventListener('click', function (event) {
+                const isMobile = window.innerWidth <= 768;
+                if (isMobile && controlsPanel.classList.contains('open')) {
+                    const isClickInsideControls = controlsPanel.contains(event.target);
+                    if (!isClickInsideControls) {
+                        controlsPanel.classList.remove('open');
+                        menuButton.innerHTML = '&#x25B6;'; // Update to Right arrow when closed by outside click
+                    }
+                }
+            });
+
+            window.addEventListener('resize', onWindowResize);
+            checkMobileControlsState();
+        }
+
+        // --- Helper Functions to Get Current Selections ---
+        function getCurrentFunction() {
+            return functions[params.currentFunctionKey];
+        }
+        function getCurrentColormap() {
+            return colormaps[params.currentColormapKey];
+        }
+        function getCurrentOptimizerStepSize() {
+            switch (params.currentOptimizerKey) {
+                case 'standard': return params.vanillaGdStepSize;
+                case 'momentum': return params.momentumStepSize;
+                case 'adam': return params.adamStepSize;
+                default: return 0.01; // Fallback
+            }
+        }
+
+        // --- Terrain (Function Plot) Generation ---
+        function createTerrainGeometry() {
+            const currentFunc = getCurrentFunction();
+            const currentColormapEval = getCurrentColormap().evaluate;
+            const vertsPerSide = params.resolution;
+            const totalVertices = vertsPerSide * vertsPerSide;
+            const positions = new Float32Array(totalVertices * 3);
+            const uvs = new Float32Array(totalVertices * 2);
+            const colors = (params.useHeightColormap || params.visualizeMinima) ? new Float32Array(totalVertices * 3) : null;
+            const rawHeights = [];
+
+            let minH_func = Infinity, maxH_func = -Infinity;
+            params.worldMinY = Infinity;
+            params.worldMaxY = -Infinity;
+            const step = 1.0 / (vertsPerSide - 1);
+
+            for (let z_idx = 0; z_idx < vertsPerSide; z_idx++) {
+                for (let x_idx = 0; x_idx < vertsPerSide; x_idx++) {
+                    const currentIndex = z_idx * vertsPerSide + x_idx;
+                    const xPercent = x_idx * step;
+                    const zPercent = z_idx * step;
+
+                    const funcX = THREE.MathUtils.lerp(params.functionInputMinX, params.functionInputMaxX, xPercent);
+                    const funcY_for_Z = THREE.MathUtils.lerp(params.functionInputMinY, params.functionInputMaxY, zPercent);
+
+                    const currentRawHeight = currentFunc.evaluate(funcX, funcY_for_Z);
+                    rawHeights.push(currentRawHeight);
+                    minH_func = Math.min(minH_func, currentRawHeight);
+                    maxH_func = Math.max(maxH_func, currentRawHeight);
+
+                    positions[currentIndex * 3] = xPercent * params.terrainSize - params.terrainSize * 0.5;
+                    positions[currentIndex * 3 + 1] = 0;
+                    positions[currentIndex * 3 + 2] = zPercent * params.terrainSize - params.terrainSize * 0.5;
+                    uvs[currentIndex * 2] = xPercent;
+                    uvs[currentIndex * 2 + 1] = zPercent;
+                }
+            }
+            params.terrainMinHeight = minH_func;
+            params.terrainHeightRange = (maxH_func - minH_func) < 1e-6 ? 1 : (maxH_func - minH_func);
+
+            for (let i = 0; i < totalVertices; i++) {
+                const normalizedHeight = (rawHeights[i] - params.terrainMinHeight) / params.terrainHeightRange;
+                const worldY = normalizedHeight * params.heightScale;
+                positions[i * 3 + 1] = worldY;
+                params.worldMinY = Math.min(params.worldMinY, worldY);
+                params.worldMaxY = Math.max(params.worldMaxY, worldY);
+
+                if (colors) {
+                    let finalColor;
+                    if (params.useHeightColormap) {
+                        finalColor = currentColormapEval(normalizedHeight);
+                    } else {
+                        finalColor = params.defaultTerrainColor.clone();
+                    }
+
+                    if (params.visualizeMinima && currentFunc.minima) {
+                        const funcX = THREE.MathUtils.lerp(params.functionInputMinX, params.functionInputMaxX, uvs[i * 2]);
+                        const funcY_for_Z = THREE.MathUtils.lerp(params.functionInputMinY, params.functionInputMaxY, uvs[i * 2 + 1]);
+                        const currentFuncInput = new THREE.Vector2(funcX, funcY_for_Z);
+                        for (const minimaCoord of currentFunc.minima) {
+                            if (currentFuncInput.distanceTo(minimaCoord) < params.minimaDetectionRadius) {
+                                finalColor = params.minimaHighlightColor.clone();
+                                break;
+                            }
+                        }
+                    }
+                    colors[i * 3] = finalColor.r;
+                    colors[i * 3 + 1] = finalColor.g;
+                    colors[i * 3 + 2] = finalColor.b;
+                }
+            }
+
+            const indices = [];
+            const numQuadsPerSide = vertsPerSide - 1;
+            for (let z_idx = 0; z_idx < numQuadsPerSide; z_idx++) {
+                for (let x_idx = 0; x_idx < numQuadsPerSide; x_idx++) {
+                    const topLeft = z_idx * vertsPerSide + x_idx;
+                    const topRight = topLeft + 1;
+                    const bottomLeft = (z_idx + 1) * vertsPerSide + x_idx;
+                    const bottomRight = bottomLeft + 1;
+                    indices.push(topLeft, bottomLeft, topRight, topRight, bottomLeft, bottomRight);
+                }
+            }
+
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+            if (colors) geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geometry.setIndex(indices);
+            geometry.computeVertexNormals();
+            return geometry;
+        }
+
+        function createTerrainMesh(geometry) {
+            const material = new THREE.MeshStandardMaterial({
+                side: THREE.DoubleSide,
+                vertexColors: params.useHeightColormap || params.visualizeMinima,
+                color: (params.useHeightColormap || params.visualizeMinima) ? 0xffffff : params.defaultTerrainColor.getHex(),
+                metalness: 0.1,
+                roughness: 0.9,
+                wireframe: false,
+                opacity: params.surfaceAlpha,
+                transparent: params.surfaceAlpha < 1.0
+            });
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.receiveShadow = true;
+            mesh.castShadow = true;
+            return mesh;
+        }
+
+        function updateTerrainMaterialAlpha() {
+            if (terrainMesh && terrainMesh.material) {
+                terrainMesh.material.opacity = params.surfaceAlpha;
+                terrainMesh.material.transparent = params.surfaceAlpha < 1.0;
+                terrainMesh.material.needsUpdate = true;
+            }
+        }
+
+        // --- Contour Lines ---
+        function updateContourLines() {
+            while (contourLinesGroup.children.length > 0) {
+                const child = contourLinesGroup.children[0];
+                contourLinesGroup.remove(child);
+                if (child.geometry) child.geometry.dispose();
+                if (child.material) child.material.dispose();
+            }
+
+            if (!params.showContourLines || !terrainMesh || !terrainMesh.geometry || !terrainMesh.geometry.attributes.position) {
+                return;
+            }
+
+            const geometry = terrainMesh.geometry;
+            const positions = geometry.attributes.position.array;
+            const indices = geometry.index.array;
+            const worldYRange = params.worldMaxY - params.worldMinY;
+            if (worldYRange < 1e-6) return;
+
+            const contourStep = worldYRange / (params.numContourLines + 1);
+
+            for (let i = 1; i <= params.numContourLines; i++) {
+                const contourHeight = params.worldMinY + i * contourStep;
+                const segments = [];
+
+                for (let j = 0; j < indices.length; j += 3) {
+                    const v1Idx = indices[j], v2Idx = indices[j + 1], v3Idx = indices[j + 2];
+                    const p1 = new THREE.Vector3(positions[v1Idx * 3], positions[v1Idx * 3 + 1], positions[v1Idx * 3 + 2]);
+                    const p2 = new THREE.Vector3(positions[v2Idx * 3], positions[v2Idx * 3 + 1], positions[v2Idx * 3 + 2]);
+                    const p3 = new THREE.Vector3(positions[v3Idx * 3], positions[v3Idx * 3 + 1], positions[v3Idx * 3 + 2]);
+
+                    const points = [p1, p2, p3];
+                    const pointsAbove = [], pointsBelow = [];
+                    points.forEach(p => (p.y >= contourHeight ? pointsAbove.push(p) : pointsBelow.push(p)));
+
+                    if (pointsAbove.length === 0 || pointsBelow.length === 0) continue;
+
+                    let intersectionPoints = [];
+                    if (pointsAbove.length === 1) {
+                        const P_above = pointsAbove[0];
+                        pointsBelow.forEach(P_below => {
+                            const t = (contourHeight - P_below.y) / (P_above.y - P_below.y);
+                            if (t >= 0 && t <= 1) intersectionPoints.push(new THREE.Vector3().lerpVectors(P_below, P_above, t));
+                        });
+                    } else {
+                        const P_below_single = pointsBelow[0];
+                        pointsAbove.forEach(P_above => {
+                            const t = (contourHeight - P_below_single.y) / (P_above.y - P_below_single.y);
+                            if (t >= 0 && t <= 1) intersectionPoints.push(new THREE.Vector3().lerpVectors(P_below_single, P_above, t));
+                        });
+                    }
+
+                    if (intersectionPoints.length === 2) {
+                        segments.push(intersectionPoints[0].x, intersectionPoints[0].y + 0.01, intersectionPoints[0].z);
+                        segments.push(intersectionPoints[1].x, intersectionPoints[1].y + 0.01, intersectionPoints[1].z);
+                    }
+                }
+
+                if (segments.length > 0) {
+                    const lineGeom = new THREE.BufferGeometry();
+                    lineGeom.setAttribute('position', new THREE.Float32BufferAttribute(segments, 3));
+                    const lineMat = new THREE.LineBasicMaterial({
+                        color: params.contourLineColor,
+                        linewidth: params.contourLineWidth,
+                        transparent: true, opacity: 0.7
+                    });
+                    const lineSegs = new THREE.LineSegments(lineGeom, lineMat);
+                    contourLinesGroup.add(lineSegs);
+                }
+            }
+        }
+
+        // --- Gradient Descent Optimizer Logic ---
+        function performStandardGDStep() {
+            const currentFunc = getCurrentFunction();
+            const grad = currentFunc.gradient(params.gdCurrentX, params.gdCurrentY);
+            params.gdCurrentX -= params.vanillaGdStepSize * grad.x;
+            params.gdCurrentY -= params.vanillaGdStepSize * grad.y;
+        }
+
+        function performMomentumStep() {
+            const currentFunc = getCurrentFunction();
+            const grad = currentFunc.gradient(params.gdCurrentX, params.gdCurrentY);
+
+            params.momentumVelocityX = params.momentumBeta * params.momentumVelocityX + grad.x;
+            params.momentumVelocityY = params.momentumBeta * params.momentumVelocityY + grad.y;
+
+            params.gdCurrentX -= params.momentumStepSize * params.momentumVelocityX;
+            params.gdCurrentY -= params.momentumStepSize * params.momentumVelocityY;
+        }
+
+        function performAdamStep() {
+            const currentFunc = getCurrentFunction();
+            const grad = currentFunc.gradient(params.gdCurrentX, params.gdCurrentY);
+            params.adamT++;
+
+            params.adamM_dx = params.adamBeta1 * params.adamM_dx + (1 - params.adamBeta1) * grad.x;
+            params.adamM_dy = params.adamBeta1 * params.adamM_dy + (1 - params.adamBeta1) * grad.y;
+
+            params.adamV_dx = params.adamBeta2 * params.adamV_dx + (1 - params.adamBeta2) * (grad.x * grad.x);
+            params.adamV_dy = params.adamBeta2 * params.adamV_dy + (1 - params.adamBeta2) * (grad.y * grad.y);
+
+            const m_hat_dx = params.adamM_dx / (1 - Math.pow(params.adamBeta1, params.adamT));
+            const m_hat_dy = params.adamM_dy / (1 - Math.pow(params.adamBeta1, params.adamT));
+
+            const v_hat_dx = params.adamV_dx / (1 - Math.pow(params.adamBeta2, params.adamT));
+            const v_hat_dy = params.adamV_dy / (1 - Math.pow(params.adamBeta2, params.adamT));
+
+            params.gdCurrentX -= params.adamStepSize * m_hat_dx / (Math.sqrt(v_hat_dx) + params.adamEpsilon);
+            params.gdCurrentY -= params.adamStepSize * m_hat_dy / (Math.sqrt(v_hat_dy) + params.adamEpsilon);
+        }
+
+        function executeActiveOptimizerStep() {
+            if (params.gdPathPointsFunc.length === 0) {
+                resetGradientDescent();
+            }
+            switch (params.currentOptimizerKey) {
+                case 'standard': performStandardGDStep(); break;
+                case 'momentum': performMomentumStep(); break;
+                case 'adam': performAdamStep(); break;
+            }
+            params.gdCurrentX = THREE.MathUtils.clamp(params.gdCurrentX, params.functionInputMinX, params.functionInputMaxX);
+            params.gdCurrentY = THREE.MathUtils.clamp(params.gdCurrentY, params.functionInputMinY, params.functionInputMaxY);
+
+            params.gdPathPointsFunc.push(new THREE.Vector2(params.gdCurrentX, params.gdCurrentY));
+            updateGradientDescentVisuals();
+        }
+
+        // --- Gradient Descent Animation ("Play" Button) ---
+        let gdPlayStepCounter = 0;
+        function timedPlayStep() {
+            if (!isGdPlaying || gdPlayStepCounter >= params.gdNumSteps) {
+                isGdPlaying = false;
+                gdPlayStepCounter = 0;
+                document.getElementById('gdPlayButton').disabled = false;
+                document.getElementById('gdNextStepButton').disabled = false;
+                document.getElementById('gdResetButton').disabled = false;
+                return;
+            }
+            executeActiveOptimizerStep();
+            gdPlayStepCounter++;
+            gdPlayTimeoutId = setTimeout(timedPlayStep, 200);
+        }
+
+        function startTimedPlay() {
+            if (isGdPlaying) return;
+            isGdPlaying = true;
+            gdPlayStepCounter = 0;
+            document.getElementById('gdPlayButton').disabled = true;
+            document.getElementById('gdNextStepButton').disabled = true;
+            document.getElementById('gdResetButton').disabled = true;
+            timedPlayStep();
+        }
+
+        // --- Coordinate Mapping & GD Visuals ---
+        function mapFuncToWorld(funcX, funcY_for_Z) {
+            const currentFunc = getCurrentFunction();
+            const xPercent = THREE.MathUtils.inverseLerp(params.functionInputMinX, params.functionInputMaxX, funcX);
+            const zPercent = THREE.MathUtils.inverseLerp(params.functionInputMinY, params.functionInputMaxY, funcY_for_Z);
+            const worldX = xPercent * params.terrainSize - params.terrainSize * 0.5;
+            const worldZ = zPercent * params.terrainSize - params.terrainSize * 0.5;
+
+            const rawHeightFunc = currentFunc.evaluate(funcX, funcY_for_Z);
+            let worldY;
+            if (params.terrainHeightRange > 1e-6) {
+                worldY = ((rawHeightFunc - params.terrainMinHeight) / params.terrainHeightRange) * params.heightScale;
+            } else {
+                worldY = 0;
+            }
+            worldY = THREE.MathUtils.clamp(worldY, params.worldMinY, params.worldMaxY);
+            return new THREE.Vector3(worldX, worldY, worldZ);
+        }
+
+        function updateGradientDescentVisuals() {
+            gdArrowHelpers.forEach(arrow => {
+                scene.remove(arrow);
+                if (arrow.line) arrow.line.material.dispose();
+                if (arrow.cone) arrow.cone.material.dispose();
+            });
+            gdArrowHelpers = [];
+
+            if (params.showGradientArrows && params.gdPathPointsFunc.length >= 2) {
+                for (let i = 0; i < params.gdPathPointsFunc.length - 1; i++) {
+                    const startPointFunc = params.gdPathPointsFunc[i];
+                    const endPointFunc = params.gdPathPointsFunc[i + 1];
+                    const startPointWorld = mapFuncToWorld(startPointFunc.x, startPointFunc.y);
+                    const endPointWorld = mapFuncToWorld(endPointFunc.x, endPointFunc.y);
+
+                    startPointWorld.y += 0.02;
+                    endPointWorld.y += 0.02;
+
+                    const direction = new THREE.Vector3().subVectors(endPointWorld, startPointWorld);
+                    const length = direction.length();
+
+                    if (length > 0.001) {
+                        const arrowHelper = new THREE.ArrowHelper(direction.normalize(), startPointWorld, length, params.arrowColor, Math.max(length * 0.2, 0.1), Math.max(length * 0.1, 0.05));
+                        if (arrowHelper.line && arrowHelper.line.material) {
+                            arrowHelper.line.material.linewidth = params.arrowLineWidth;
+                        }
+                        scene.add(arrowHelper);
+                        gdArrowHelpers.push(arrowHelper);
+                    }
+                }
+            }
+
+            if (gdCurrentMarker) scene.remove(gdCurrentMarker);
+            if (params.gdPathPointsFunc.length > 0) {
+                const currentFunc = getCurrentFunction();
+                const lastFuncPoint = params.gdPathPointsFunc[params.gdPathPointsFunc.length - 1];
+                const markerWorldPos = mapFuncToWorld(lastFuncPoint.x, lastFuncPoint.y);
+                markerWorldPos.y += 0.05;
+
+                const markerGeometry = new THREE.SphereGeometry(0.15, 16, 16);
+                const markerMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+                gdCurrentMarker = new THREE.Mesh(markerGeometry, markerMaterial);
+                gdCurrentMarker.position.copy(markerWorldPos);
+                scene.add(gdCurrentMarker);
+
+                params.gdCurrentFuncValue = currentFunc.evaluate(lastFuncPoint.x, lastFuncPoint.y);
+                document.getElementById('gdCurrentValue').textContent = params.gdCurrentFuncValue.toFixed(4);
+            } else {
+                document.getElementById('gdCurrentValue').textContent = "N/A";
+            }
+            updateLiveGradientArrow();
+        }
+
+        function updateLiveGradientArrow() {
+            if (liveGradientArrow) {
+                scene.remove(liveGradientArrow);
+                if (liveGradientArrow.line) liveGradientArrow.line.material.dispose();
+                if (liveGradientArrow.cone) liveGradientArrow.cone.material.dispose();
+                liveGradientArrow = null;
+            }
+
+            if (params.showCurrentGradientVector && terrainMesh) {
+                const currentFunc = getCurrentFunction();
+                const startX_func = params.gdStartX;
+                const startY_func = params.gdStartY;
+                const activeStepSize = getCurrentOptimizerStepSize();
+                const grad = currentFunc.gradient(startX_func, startY_func);
+
+                const nextX_func_preview = startX_func - activeStepSize * grad.x;
+                const nextY_func_preview = startY_func - activeStepSize * grad.y;
+
+                const originWorld = mapFuncToWorld(startX_func, startY_func);
+                const targetWorld_preview = mapFuncToWorld(nextX_func_preview, nextY_func_preview);
+                originWorld.y += 0.05;
+                targetWorld_preview.y += 0.05;
+
+                const direction = new THREE.Vector3().subVectors(targetWorld_preview, originWorld);
+                const length = direction.length();
+
+                if (length > 0.001) {
+                    liveGradientArrow = new THREE.ArrowHelper(direction.normalize(), originWorld, length, params.liveGradientArrowColor, Math.max(length * 0.25, 0.15), Math.max(length * 0.15, 0.1));
+                    if (liveGradientArrow.line && liveGradientArrow.line.material) {
+                        liveGradientArrow.line.material.linewidth = params.arrowLineWidth;
+                    }
+                    scene.add(liveGradientArrow);
+                }
+            }
+        }
+
+        function resetGradientDescent() {
+            if (isGdPlaying) {
+                clearTimeout(gdPlayTimeoutId);
+                isGdPlaying = false;
+                gdPlayStepCounter = 0;
+            }
+            document.getElementById('gdPlayButton').disabled = false;
+            document.getElementById('gdNextStepButton').disabled = false;
+            document.getElementById('gdResetButton').disabled = false;
+
+            params.gdCurrentX = params.gdStartX;
+            params.gdCurrentY = params.gdStartY;
+            params.gdPathPointsFunc = [new THREE.Vector2(params.gdStartX, params.gdStartY)];
+
+            params.momentumVelocityX = 0; params.momentumVelocityY = 0;
+            params.adamM_dx = 0; params.adamM_dy = 0;
+            params.adamV_dx = 0; params.adamV_dy = 0;
+            params.adamT = 0;
+
+            gdArrowHelpers.forEach(arrow => {
+                scene.remove(arrow);
+                if (arrow.line) arrow.line.material.dispose();
+                if (arrow.cone) arrow.cone.material.dispose();
+            });
+            gdArrowHelpers = [];
+
+            if (gdCurrentMarker) {
+                scene.remove(gdCurrentMarker);
+                if (gdCurrentMarker.geometry) gdCurrentMarker.geometry.dispose();
+                if (gdCurrentMarker.material) gdCurrentMarker.material.dispose();
+                gdCurrentMarker = null;
+            }
+
+            updateGradientDescentVisuals();
+        }
+
+        // --- UI Setup and Event Handlers ---
+        function updateFunctionSelection() {
+            const selectedFuncKey = document.getElementById('functionSelect').value;
+            params.currentFunctionKey = selectedFuncKey;
+            const currentFunc = getCurrentFunction();
+
+            params.functionInputMinX = currentFunc.domain.minX;
+            params.functionInputMaxX = currentFunc.domain.maxX;
+            params.functionInputMinY = currentFunc.domain.minY;
+            params.functionInputMaxY = currentFunc.domain.maxY;
+
+            document.getElementById('functionNameDisplay').textContent = currentFunc.name;
+            if (window.katex && typeof katex.render === 'function') {
+                katex.render(currentFunc.formulaTex, document.getElementById('functionFormulaDisplay'), {
+                    throwOnError: false, displayMode: false
+                });
+            } else {
+                document.getElementById('functionFormulaDisplay').textContent = currentFunc.formulaTex;
+            }
+
+            const gdStartXInput = document.getElementById('gdStartX');
+            const gdStartYInput = document.getElementById('gdStartY');
+            gdStartXInput.min = currentFunc.domain.minX;
+            gdStartXInput.max = currentFunc.domain.maxX;
+            gdStartYInput.min = currentFunc.domain.minY;
+            gdStartYInput.max = currentFunc.domain.maxY;
+
+            let newGdStartX = parseFloat(gdStartXInput.value);
+            let newGdStartY = parseFloat(gdStartYInput.value);
+
+            if (newGdStartX < currentFunc.domain.minX || newGdStartX > currentFunc.domain.maxX || isNaN(newGdStartX)) {
+                newGdStartX = (currentFunc.domain.minX + currentFunc.domain.maxX) / 2;
+            }
+            if (newGdStartY < currentFunc.domain.minY || newGdStartY > currentFunc.domain.maxY || isNaN(newGdStartY)) {
+                newGdStartY = (currentFunc.domain.minY + currentFunc.domain.maxY) / 2;
+            }
+
+            params.gdStartX = THREE.MathUtils.clamp(newGdStartX, currentFunc.domain.minX, currentFunc.domain.maxX);
+            params.gdStartY = THREE.MathUtils.clamp(newGdStartY, currentFunc.domain.minY, currentFunc.domain.maxY);
+
+            gdStartXInput.value = params.gdStartX;
+            gdStartYInput.value = params.gdStartY;
+            document.getElementById('gdStartXValue').textContent = params.gdStartX.toFixed(1);
+            document.getElementById('gdStartYValue').textContent = params.gdStartY.toFixed(1);
+        }
+
+        function updateColorbar() {
+            const canvas = document.getElementById('colorbarCanvas');
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            const colormapEval = getCurrentColormap().evaluate;
+
+            ctx.clearRect(0, 0, width, height);
+            for (let i = 0; i < width; i++) {
+                const value = i / (width - 1);
+                const color = colormapEval(value);
+                ctx.fillStyle = `rgb(${Math.floor(color.r * 255)}, ${Math.floor(color.g * 255)}, ${Math.floor(color.b * 255)})`;
+                ctx.fillRect(i, 0, 1, height);
+            }
+            document.getElementById('colorbarMin').textContent = params.worldMinY.toFixed(1);
+            document.getElementById('colorbarMax').textContent = params.worldMaxY.toFixed(1);
+        }
+
+        function setupUI() {
+            const functionSelect = document.getElementById('functionSelect');
+            Object.keys(functions).forEach(key => {
+                const option = document.createElement('option');
+                option.value = key; option.textContent = functions[key].name;
+                functionSelect.appendChild(option);
+            });
+            functionSelect.value = params.currentFunctionKey;
+            functionSelect.addEventListener('change', () => {
+                updateFunctionSelection();
+                regenerateTerrainAndGD();
+            });
+
+            const colormapSelect = document.getElementById('colormapSelect');
+            Object.keys(colormaps).forEach(key => {
+                const option = document.createElement('option');
+                option.value = key; option.textContent = colormaps[key].name;
+                colormapSelect.appendChild(option);
+            });
+            colormapSelect.value = params.currentColormapKey;
+            colormapSelect.addEventListener('change', () => {
+                params.currentColormapKey = colormapSelect.value;
+                if (terrainMesh && terrainMesh.geometry.attributes.position) {
+                    const currentFunc = getCurrentFunction();
+                    const currentColormapEval = getCurrentColormap().evaluate;
+                    const positions = terrainMesh.geometry.attributes.position.array;
+                    const uvs = terrainMesh.geometry.attributes.uv.array;
+                    const colorAttribute = terrainMesh.geometry.attributes.color;
+                    const colorsArray = colorAttribute ? colorAttribute.array : new Float32Array(positions.length / 3 * 3);
+
+                    for (let i = 0; i < positions.length / 3; i++) {
+                        const worldY = positions[i * 3 + 1];
+                        const normalizedWorldHeight = (params.worldMaxY - params.worldMinY < 1e-6) ? 0.5 : (worldY - params.worldMinY) / (params.worldMaxY - params.worldMinY);
+
+                        let finalColor;
+                        if (params.useHeightColormap) {
+                            finalColor = currentColormapEval(normalizedWorldHeight);
+                        } else {
+                            finalColor = params.defaultTerrainColor.clone();
+                        }
+
+                        if (params.visualizeMinima && currentFunc.minima) {
+                            const funcX = THREE.MathUtils.lerp(params.functionInputMinX, params.functionInputMaxX, uvs[i * 2]);
+                            const funcY_for_Z = THREE.MathUtils.lerp(params.functionInputMinY, params.functionInputMaxY, uvs[i * 2 + 1]);
+                            const currentFuncInput = new THREE.Vector2(funcX, funcY_for_Z);
+                            for (const minimaCoord of currentFunc.minima) {
+                                if (currentFuncInput.distanceTo(minimaCoord) < params.minimaDetectionRadius) {
+                                    finalColor = params.minimaHighlightColor.clone(); break;
+                                }
+                            }
+                        }
+                        colorsArray[i * 3] = finalColor.r;
+                        colorsArray[i * 3 + 1] = finalColor.g;
+                        colorsArray[i * 3 + 2] = finalColor.b;
+                    }
+
+                    if (!colorAttribute && (params.useHeightColormap || params.visualizeMinima)) {
+                        terrainMesh.geometry.setAttribute('color', new THREE.BufferAttribute(colorsArray, 3));
+                    }
+                    if (terrainMesh.geometry.attributes.color) {
+                        terrainMesh.geometry.attributes.color.needsUpdate = true;
+                    }
+                    terrainMesh.material.vertexColors = params.useHeightColormap || params.visualizeMinima;
+                    terrainMesh.material.color.set((params.useHeightColormap || params.visualizeMinima) ? 0xffffff : params.defaultTerrainColor.getHex());
+                    terrainMesh.material.needsUpdate = true;
+                }
+                updateColorbar();
+            });
+
+            document.getElementById('heightScale').addEventListener('input', e => { params.heightScale = parseFloat(e.target.value); document.getElementById('heightScaleValue').textContent = params.heightScale.toFixed(1); });
+            document.getElementById('terrainSize').addEventListener('input', e => { params.terrainSize = parseFloat(e.target.value); document.getElementById('terrainSizeValue').textContent = params.terrainSize.toFixed(1); });
+            document.getElementById('surfaceAlpha').addEventListener('input', e => { params.surfaceAlpha = parseFloat(e.target.value); document.getElementById('surfaceAlphaValue').textContent = params.surfaceAlpha.toFixed(2); updateTerrainMaterialAlpha(); });
+            document.getElementById('useHeightColormap').addEventListener('change', e => { params.useHeightColormap = e.target.checked; regenerateTerrainAndGD(); });
+            document.getElementById('visualizeMinima').addEventListener('change', e => { params.visualizeMinima = e.target.checked; regenerateTerrainAndGD(); });
+            document.getElementById('showContourLines').addEventListener('change', e => { params.showContourLines = e.target.checked; updateContourLines(); });
+            document.getElementById('numContourLines').addEventListener('input', e => { params.numContourLines = parseInt(e.target.value); document.getElementById('numContourLinesValue').textContent = params.numContourLines; updateContourLines(); });
+            document.getElementById('regenerateTerrainButton').addEventListener('click', regenerateTerrainAndGD);
+
+            document.getElementById('gdStartX').addEventListener('input', e => { params.gdStartX = parseFloat(e.target.value); document.getElementById('gdStartXValue').textContent = params.gdStartX.toFixed(1); resetGradientDescent(); });
+            document.getElementById('gdStartY').addEventListener('input', e => { params.gdStartY = parseFloat(e.target.value); document.getElementById('gdStartYValue').textContent = params.gdStartY.toFixed(1); resetGradientDescent(); });
+            document.getElementById('gdNumSteps').addEventListener('input', e => { params.gdNumSteps = parseInt(e.target.value); document.getElementById('gdNumStepsValue').textContent = params.gdNumSteps; });
+            document.getElementById('showGradientArrows').addEventListener('change', e => { params.showGradientArrows = e.target.checked; updateGradientDescentVisuals(); });
+            document.getElementById('showCurrentGradientVector').addEventListener('change', e => { params.showCurrentGradientVector = e.target.checked; updateLiveGradientArrow(); });
+
+            const optimizerParamChanged = () => { resetGradientDescent(); updateLiveGradientArrow(); };
+            document.getElementById('vanillaGdStepSize').addEventListener('input', e => { params.vanillaGdStepSize = parseFloat(e.target.value); document.getElementById('vanillaGdStepSizeValue').textContent = params.vanillaGdStepSize.toFixed(3); if (params.currentOptimizerKey === 'standard') optimizerParamChanged(); });
+            document.getElementById('momentumBeta').addEventListener('input', e => { params.momentumBeta = parseFloat(e.target.value); document.getElementById('momentumBetaValue').textContent = params.momentumBeta.toFixed(2); if (params.currentOptimizerKey === 'momentum') optimizerParamChanged(); });
+            document.getElementById('momentumStepSize').addEventListener('input', e => { params.momentumStepSize = parseFloat(e.target.value); document.getElementById('momentumStepSizeValue').textContent = params.momentumStepSize.toFixed(3); if (params.currentOptimizerKey === 'momentum') optimizerParamChanged(); });
+            document.getElementById('adamBeta1').addEventListener('input', e => { params.adamBeta1 = parseFloat(e.target.value); document.getElementById('adamBeta1Value').textContent = params.adamBeta1.toFixed(3); if (params.currentOptimizerKey === 'adam') optimizerParamChanged(); });
+            document.getElementById('adamBeta2').addEventListener('input', e => { params.adamBeta2 = parseFloat(e.target.value); document.getElementById('adamBeta2Value').textContent = params.adamBeta2.toFixed(4); if (params.currentOptimizerKey === 'adam') optimizerParamChanged(); });
+            document.getElementById('adamEpsilon').addEventListener('input', e => { params.adamEpsilon = parseFloat(e.target.value); document.getElementById('adamEpsilonValue').textContent = params.adamEpsilon.toExponential(1); if (params.currentOptimizerKey === 'adam') optimizerParamChanged(); });
+            document.getElementById('adamStepSize').addEventListener('input', e => { params.adamStepSize = parseFloat(e.target.value); document.getElementById('adamStepSizeValue').textContent = params.adamStepSize.toFixed(3); if (params.currentOptimizerKey === 'adam') optimizerParamChanged(); });
+
+            document.getElementById('gdPlayButton').addEventListener('click', startTimedPlay);
+            document.getElementById('gdNextStepButton').addEventListener('click', executeActiveOptimizerStep);
+            document.getElementById('gdResetButton').addEventListener('click', resetGradientDescent);
+
+            Object.keys(params).forEach(key => {
+                const valueDisplay = document.getElementById(key + 'Value');
+                const inputElement = document.getElementById(key);
+                if (valueDisplay) {
+                    if (typeof params[key] === 'number') {
+                        if (key === 'adamEpsilon') valueDisplay.textContent = params[key].toExponential(1);
+                        else if (key.includes('StepSize') || key === 'adamBeta1') valueDisplay.textContent = params[key].toFixed(3);
+                        else if (key === 'adamBeta2') valueDisplay.textContent = params[key].toFixed(4);
+                        else if (key === 'surfaceAlpha' || key === 'momentumBeta') valueDisplay.textContent = params[key].toFixed(2);
+                        else valueDisplay.textContent = params[key].toFixed(1);
+                    } else {
+                        valueDisplay.textContent = params[key];
+                    }
+                }
+                if (inputElement && inputElement.type === 'checkbox') {
+                    inputElement.checked = params[key];
+                }
+            });
+            document.getElementById('gdNumStepsValue').textContent = params.gdNumSteps;
+        }
+
+        // --- Main Regeneration Function ---
+        function regenerateTerrainAndGD() {
+            if (terrainMesh) {
+                scene.remove(terrainMesh);
+                if (terrainMesh.geometry) terrainMesh.geometry.dispose();
+                if (terrainMesh.material) terrainMesh.material.dispose();
+                terrainMesh = null;
+            }
+            const terrainGeom = createTerrainGeometry();
+            terrainMesh = createTerrainMesh(terrainGeom);
+            scene.add(terrainMesh);
+
+            controls.maxDistance = params.terrainSize * 3;
+            const directionalLight = scene.children.find(obj => obj.isDirectionalLight);
+            if (directionalLight) {
+                directionalLight.position.set(params.terrainSize, params.terrainSize * 1.5, params.terrainSize * 0.5);
+                directionalLight.shadow.camera.far = params.terrainSize * 4;
+                const shadowCamSize = params.terrainSize * 1.2;
+                directionalLight.shadow.camera.left = -shadowCamSize;
+                directionalLight.shadow.camera.right = shadowCamSize;
+                directionalLight.shadow.camera.top = shadowCamSize;
+                directionalLight.shadow.camera.bottom = -shadowCamSize;
+                directionalLight.shadow.camera.updateProjectionMatrix();
+            }
+            scene.fog.near = params.terrainSize * 2;
+            scene.fog.far = params.terrainSize * 5;
+
+
+            updateContourLines();
+            resetGradientDescent();
+            updateColorbar();
+        }
+
+        // --- Mobile Controls State ---
+        function checkMobileControlsState() {
+            const isMobile = window.innerWidth <= 768;
+            const controlsPanel = document.getElementById('controls');
+            const menuButtonContainer = document.getElementById('menuButtonContainer');
+            const menuButton = document.getElementById('menuButton');
+
+            if (isMobile) {
+                menuButtonContainer.style.display = 'block';
+                controlsPanel.style.position = '';
+                controlsPanel.style.left = '';
+                controlsPanel.style.top = '';
+                controlsPanel.style.width = '';
+                controlsPanel.style.height = '';
+                controlsPanel.style.maxHeight = '';
+                // Set initial arrow direction based on panel state
+                if (controlsPanel.classList.contains('open')) {
+                    menuButton.innerHTML = '&#x25C0;'; // Left arrow
+                } else {
+                    menuButton.innerHTML = '&#x25B6;'; // Right arrow
+                }
+            } else {
+                menuButtonContainer.style.display = 'none';
+                controlsPanel.classList.remove('open');
+                controlsPanel.style.position = 'absolute';
+                controlsPanel.style.left = '10px';
+                controlsPanel.style.top = '10px';
+                controlsPanel.style.width = '320px';
+                controlsPanel.style.height = 'calc(100vh - 100px)';
+                controlsPanel.style.maxHeight = 'calc(100vh - 100px)';
+                controlsPanel.style.paddingTop = ''; // Remove mobile padding-top
+            }
+        }
+
+        // --- Window Resize ---
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            checkMobileControlsState();
+        }
+
+        // --- Animation Loop ---
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"
+        integrity="sha384-n8MVd4RsNIU0KOV3cA1ccGEFqzGvv4tY9DYZA9e5oIuz7RJXFX6XTQH2pcMJHOHv" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"
+        integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmImKTqsvg"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>

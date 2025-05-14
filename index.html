@@ -1,11 +1,190 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
-    <title>Joed</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI & Robotics: Gradient Descent Tutorials</title>
+    <meta name="description"
+        content="Explore tutorials on Gradient Descent (Base, Momentum, ADAM) with visualizations and equations, and its application in solving Inverse Kinematics for a 2-Link Arm Robot.">
+    <meta name="keywords"
+        content="AI tutorials, Gradient Descent, Momentum, ADAM, Optimization, Inverse Kinematics, 2-Link Arm Robot, Robotics, Machine Learning, Visualization, Equations">
+    <meta name="author" content="[Your Name or Project Name]">
+
+    <style>
+        body {
+            background-color: #ffffff;
+            /* White background */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* Center content horizontally */
+            justify-content: space-between;
+            /* Pushes footer to bottom */
+            min-height: 100vh;
+            color: #004080;
+            /* Primary text color - a shade of blue */
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            /* Max width for content */
+            margin: 20px auto;
+            padding: 20px;
+            text-align: left;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-top: 20px;
+        }
+
+        header h1 {
+            color: #003366;
+            /* Darker blue for main heading */
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: #0059b3;
+            /* Lighter blue for subtitle */
+            font-size: 1.1em;
+        }
+
+        .tutorial-list h2 {
+            color: #003366;
+            /* Darker blue for section heading */
+            border-bottom: 2px solid #e0e0e0;
+            /* Light grey separator */
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .tutorial-item {
+            margin-bottom: 30px;
+            background-color: #f8f9fa;
+            /* Very light grey background for item */
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            /* Light border */
+        }
+
+        .tutorial-item h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        .tutorial-item h3 a {
+            color: #0066cc;
+            /* Link color - a medium blue */
+            text-decoration: none;
+            font-size: 1.4em;
+            font-weight: bold;
+        }
+
+        .tutorial-item h3 a:hover,
+        .tutorial-item h3 a:focus {
+            color: #0088ff;
+            /* Lighter blue for link hover/focus */
+            text-decoration: underline;
+        }
+
+        .tutorial-item p.description {
+            color: #004080;
+            /* Standard text blue */
+            font-size: 1em;
+            line-height: 1.6;
+            margin-top: 5px;
+        }
+
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+            /* Pushes footer down if content is short */
+            width: 100%;
+            background-color: #f8f9fa;
+            /* Light background for footer */
+            border-top: 1px solid #dee2e6;
+            /* Light border top */
+        }
+
+        footer p {
+            margin: 0;
+            color: #003366;
+            /* Darker blue for footer text */
+            font-size: 0.9em;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 2em;
+            }
+
+            .tutorial-item h3 a {
+                font-size: 1.2em;
+            }
+        }
+    </style>
 </head>
 
 <body>
-    Hello!
+    <div class="container">
+        <header>
+            <h1>Artificial Intelligence: Introduction</h1>
+            <p>Interactive and Visual Explanation</p>
+        </header>
+
+        <main>
+            <section class="tutorial-list">
+                <h2>Available Tutorials & Examples</h2>
+
+                <article class="tutorial-item">
+                    <h3>
+                        <a href="tutorials/gradient_descent_view.html">Tutorial 1 - Gradient Descent (Base,
+                            Momentum, ADAM) Visualization, Equations for Gradient Descent</a>
+                    </h3>
+                    <h3><a href="tutorials/gradient_descent_equations.html">Extra: Gradient Descent - Equations</a></h2>
+                        <p class="description">
+                            An in-depth exploration of the Gradient Descent optimization algorithm, covering the
+                            foundational concept, variants like Momentum and ADAM, complete with interactive
+                            visualizations
+                            and the essential mathematical equations.
+                        </p>
+                </article>
+
+                <article class="tutorial-item">
+                    <h3>
+                        <a href="tutorials/robot_arm.html">Example 2 - Gradient Descent to Solve
+                            Inverse Kinematics (2-Link Arm Robot)</a>
+                    </h3>
+                    <p class="description">
+                        A practical demonstration of how Gradient Descent can be applied to solve the Inverse Kinematics
+                        problem for a 2-Link robotic arm, bridging theory with a tangible robotics example.
+                    </p>
+                </article>
+            </section>
+        </main>
+    </div>
+
+    <footer>
+        <p>&copy; <span id="currentYear"></span> Joed Lopes da Silva - AI Tutorial</p>
+    </footer>
+
+    <script>
+        // Set current year in footer
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+    </script>
 </body>
 
 </html>

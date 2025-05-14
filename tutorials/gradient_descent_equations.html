@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optimization Algorithms Explained</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.8;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-weight: 600;
+            margin-bottom: 0.5em;
+            margin-top: 1em;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #1E40AF;
+            /* Tailwind blue-800 */
+        }
+
+        h2 {
+            font-size: 2em;
+            color: #1D4ED8;
+            /* Tailwind blue-700 */
+            border-bottom: 2px solid #DBEAFE;
+            /* Tailwind blue-100 */
+            padding-bottom: 0.3em;
+        }
+
+        h3 {
+            font-size: 1.5em;
+            color: #2563EB;
+            /* Tailwind blue-600 */
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9fafb;
+            /* Tailwind gray-50 */
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .algorithm-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .equation {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #EFF6FF;
+            /* Tailwind blue-50 */
+            border-left: 4px solid #3B82F6;
+            /* Tailwind blue-500 */
+            border-radius: 4px;
+            overflow-x: auto;
+            /* For long equations */
+        }
+
+        code:not(pre code) {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #f3f4f6;
+            /* Tailwind gray-100 */
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+
+        pre code.hljs {
+            display: block;
+            overflow-x: auto;
+            padding: 1em;
+            background: #282c34;
+            color: #abb2bf;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .explanation p {
+            margin-bottom: 1em;
+        }
+
+        .parameter-list li {
+            margin-bottom: 0.5em;
+        }
+
+        .parameter-list li span {
+            margin-right: 0.3em;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 text-gray-800">
+    <div class="container my-12">
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-blue-700">Optimization Algorithms in Deep Learning</h1>
+            <p class="text-lg text-gray-600 mt-2">Understanding Gradient Descent, Momentum, and ADAM</p>
+        </header>
+
+        <section class="algorithm-section" id="gradient-descent">
+            <h2>1. Gradient Descent</h2>
+            <div class="explanation">
+                <p>Gradient Descent is the foundational optimization algorithm used to minimize a cost function (or loss
+                    function) \(J(\theta)\) by iteratively moving in the direction of the steepest descent, which is the
+                    negative of the gradient. The learning rate \(\alpha\) determines the size of the steps we take.</p>
+                <p>Imagine you are on a mountain and want to get to the lowest point. Gradient descent is like taking
+                    small steps downhill in the direction where the slope is steepest. The size of your step is the
+                    learning rate. If it's too small, you'll take a long time to reach the bottom. If it's too large,
+                    you might overshoot and never reach the bottom.</p>
+            </div>
+
+            <h3>Mathematical Formulation:</h3>
+            <div class="equation">
+                $$ \theta_{t+1} = \theta_t - \alpha \nabla J(\theta_t) $$
+            </div>
+            <p>Where:</p>
+            <ul class="parameter-list list-disc list-inside ml-4">
+                <li><span>\(\theta_{t+1}\)</span> are the parameters at the next iteration.</li>
+                <li><span>\(\theta_t\)</span> are the current parameters.</li>
+                <li><span>\(\alpha\)</span> is the learning rate (a small positive scalar).</li>
+                <li><span>\(\nabla J(\theta_t)\)</span> is the gradient of the cost function \(J\) with respect to the
+                    parameters \(\theta\) at the current iteration \(t\).</li>
+            </ul>
+
+            <h3>Python/NumPy Snippet:</h3>
+            <pre><code class="language-python">
+import numpy as np
+
+# Example cost function (e.g., for linear regression)
+def cost_function(X, y, theta):
+    m = len(y)
+    predictions = X.dot(theta)
+    cost = (1/(2*m)) * np.sum(np.square(predictions - y))
+    return cost
+
+# Example gradient calculation (for linear regression)
+def gradient(X, y, theta):
+    m = len(y)
+    predictions = X.dot(theta)
+    grad = (1/m) * X.T.dot(predictions - y)
+    return grad
+
+def gradient_descent(X, y, theta_initial, learning_rate, n_iterations):
+    """
+    Performs gradient descent to learn theta.
+    
+    Args:
+        X (np.array): Feature matrix (add intercept term if needed).
+        y (np.array): Target vector.
+        theta_initial (np.array): Initial parameter values.
+        learning_rate (float): Step size for each iteration.
+        n_iterations (int): Number of iterations to perform.
+        
+    Returns:
+        theta (np.array): Learned parameters.
+        cost_history (list): Cost at each iteration.
+    """
+    theta = theta_initial.copy() # Ensure we don't modify the original
+    cost_history = []
+
+    for i in range(n_iterations):
+        grad = gradient(X, y, theta)
+        theta = theta - learning_rate * grad
+        current_cost = cost_function(X, y, theta)
+        cost_history.append(current_cost)
+        
+        if i % 100 == 0: # Print cost every 100 iterations
+            print(f"Iteration {i}: Cost = {current_cost}")
+            
+    return theta, cost_history
+
+# Example Usage (assuming X_train, y_train are defined)
+# X_train_b = np.c_[np.ones((len(X_train), 1)), X_train] # Add intercept term
+# initial_theta = np.random.randn(X_train_b.shape[1], 1) 
+# learning_rate = 0.01
+# iterations = 1000
+# theta_final, costs = gradient_descent(X_train_b, y_train, initial_theta, learning_rate, iterations)
+# print("Final theta:", theta_final)
+            </code></pre>
+            <p class="mt-4"><strong>Note:</strong> The example usage is commented out. You'd need to define
+                <code>X_train</code> and <code>y_train</code> with your actual data to run it.</p>
+        </section>
+
+        <section class="algorithm-section" id="momentum">
+            <h2>2. Gradient Descent with Momentum</h2>
+            <div class="explanation">
+                <p>Gradient Descent with Momentum helps accelerate SGD in the relevant direction and dampens
+                    oscillations. It does this by adding a fraction \(\beta\) (beta, the momentum term) of the update
+                    vector of the past time step to the current update vector. This simulates the concept of momentum in
+                    physics, where a ball rolling down a hill gains momentum and continues moving in the same direction.
+                </p>
+                <p>This is particularly useful in situations where the cost surface has high curvature, ravines, or
+                    noisy gradients. Momentum helps to smooth out the updates and prevents the optimizer from getting
+                    stuck in local minima or slowing down excessively in flat regions.</p>
+            </div>
+
+            <h3>Mathematical Formulation:</h3>
+            <p>The update rule involves a "velocity" term \(v_t\): </p>
+            <div class="equation">
+                $$ v_t = \beta v_{t-1} + (1-\beta) \nabla J(\theta_t) \quad \text{(often, (1-beta) is absorbed into
+                learning rate or simply } \alpha \nabla J(\theta_t) \text{ is used)}$$
+                $$ \theta_{t+1} = \theta_t - \alpha v_t $$
+            </div>
+            <p>A more common formulation directly uses the learning rate \(\alpha\) with the gradient term:</p>
+            <div class="equation">
+                $$ v_t = \beta v_{t-1} + \alpha \nabla J(\theta_t) $$
+                $$ \theta_{t+1} = \theta_t - v_t $$
+            </div>
+            <p>Where:</p>
+            <ul class="parameter-list list-disc list-inside ml-4">
+                <li><span>\(v_t\)</span> is the velocity (or momentum) vector at iteration \(t\). Initialize \(v_0 =
+                    0\).</li>
+                <li><span>\(\beta\)</span> is the momentum coefficient (typically around 0.9). It determines how much of
+                    the previous update is carried forward.</li>
+                <li><span>\(\alpha\)</span> is the learning rate.</li>
+                <li><span>\(\nabla J(\theta_t)\)</span> is the gradient of the cost function.</li>
+            </ul>
+
+            <h3>Python/NumPy Snippet:</h3>
+            <pre><code class="language-python">
+# (Code remains the same, only text and LaTeX delimiters updated)
+import numpy as np
+
+# Assuming cost_function and gradient functions are defined as in Gradient Descent section
+
+def gradient_descent_with_momentum(X, y, theta_initial, learning_rate, n_iterations, beta):
+    theta = theta_initial.copy()
+    cost_history = []
+    v = np.zeros_like(theta) 
+
+    for i in range(n_iterations):
+        grad = gradient(X, y, theta)
+        v = beta * v + learning_rate * grad 
+        theta = theta - v
+        current_cost = cost_function(X, y, theta)
+        cost_history.append(current_cost)
+        if i % 100 == 0:
+            print(f"Iteration {i}: Cost = {current_cost}")
+    return theta, cost_history
+            </code></pre>
+        </section>
+
+        <section class="algorithm-section" id="adam">
+            <h2>3. ADAM (Adaptive Moment Estimation)</h2>
+            <div class="explanation">
+                <p>ADAM is an optimization algorithm that combines the ideas of Momentum and RMSprop (Root Mean Square
+                    Propagation). It computes adaptive learning rates for each parameter. In addition to storing an
+                    exponentially decaying average of past squared gradients like RMSprop, ADAM also keeps an
+                    exponentially decaying average of past gradients, similar to momentum.</p>
+                <p>It is computationally efficient, has little memory requirements, is invariant to diagonal rescaling
+                    of gradients, and is well suited for problems that are large in terms of data and/or parameters.
+                    It's often the default go-to optimizer for many deep learning applications.</p>
+            </div>
+
+            <h3>Mathematical Formulation:</h3>
+            <p>ADAM involves the following steps at each iteration \(t\) (for \(t=1, 2, \dots\)):</p>
+            <ol class="list-decimal list-inside ml-4 parameter-list">
+                <li>Compute gradient: \(g_t = \nabla J(\theta_{t-1})\)</li>
+                <li>Update biased first moment estimate (momentum):
+                    <div class="equation">$$ m_t = \beta_1 m_{t-1} + (1-\beta_1) g_t $$</div>
+                </li>
+                <li>Update biased second raw moment estimate (like RMSprop):
+                    <div class="equation">$$ v_t = \beta_2 v_{t-1} + (1-\beta_2) g_t^2 $$</div>
+                    (Note: \(g_t^2\) is element-wise square)
+                </li>
+                <li>Compute bias-corrected first moment estimate:
+                    <div class="equation">$$ \hat{m}_t = \frac{m_t}{1 - \beta_1^t} $$</div>
+                </li>
+                <li>Compute bias-corrected second raw moment estimate:
+                    <div class="equation">$$ \hat{v}_t = \frac{v_t}{1 - \beta_2^t} $$</div>
+                </li>
+                <li>Update parameters:
+                    <div class="equation">$$ \theta_t = \theta_{t-1} - \alpha \frac{\hat{m}_t}{\sqrt{\hat{v}_t} +
+                        \epsilon} $$</div>
+                </li>
+            </ol>
+            <p>Where:</p>
+            <ul class="parameter-list list-disc list-inside ml-4">
+                <li><span>\(\alpha\)</span> is the learning rate (step size).</li>
+                <li><span>\(\beta_1\)</span> is the exponential decay rate for the first moment estimates (e.g., 0.9).
+                </li>
+                <li><span>\(\beta_2\)</span> is the exponential decay rate for the second moment estimates (e.g.,
+                    0.999).</li>
+                <li><span>\(\epsilon\)</span> is a small constant for numerical stability (e.g., \(10^{-8}\)).</li>
+                <li><span>\(m_0\)</span> and <span>\(v_0\)</span> are initialized as 0-vectors.</li>
+            </ul>
+
+            <h3>Python/NumPy Snippet:</h3>
+            <pre><code class="language-python">
+# (Code remains the same, only text and LaTeX delimiters updated)
+import numpy as np
+
+# Assuming cost_function and gradient functions are defined as in Gradient Descent section
+
+def adam_optimizer(X, y, theta_initial, learning_rate, n_iterations, beta1, beta2, epsilon):
+    theta = theta_initial.copy()
+    cost_history = []
+    m_t = np.zeros_like(theta) 
+    v_t = np.zeros_like(theta) 
+    t = 0                    
+
+    for i in range(n_iterations):
+        t += 1
+        grad = gradient(X, y, theta)
+        m_t = beta1 * m_t + (1 - beta1) * grad
+        v_t = beta2 * v_t + (1 - beta2) * (grad**2)
+        m_hat = m_t / (1 - beta1**t)
+        v_hat = v_t / (1 - beta2**t)
+        theta = theta - learning_rate * m_hat / (np.sqrt(v_hat) + epsilon)
+        current_cost = cost_function(X, y, theta)
+        cost_history.append(current_cost)
+        if i % 100 == 0:
+            print(f"Iteration {i} (t={t}): Cost = {current_cost}")
+    return theta, cost_history
+            </code></pre>
+        </section>
+
+        <footer class="text-center mt-12 py-6 border-t border-gray-300">
+            <p class="text-gray-600">Optimization Algorithms Overview</p>
+        </footer>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            console.log("DOM fully loaded and parsed");
+
+            // Initialize Highlight.js
+            if (typeof hljs !== 'undefined') {
+                console.log("Initializing Highlight.js");
+                hljs.highlightAll();
+                console.log("Highlight.js finished.");
+            } else {
+                console.log("Highlight.js not found.");
+            }
+
+            // Ensure MathJax typesets everything
+            if (typeof MathJax !== 'undefined') {
+                console.log("MathJax found, attempting to typeset.");
+                if (MathJax.startup && MathJax.startup.promise) {
+                    MathJax.startup.promise.then(() => {
+                        console.log("MathJax startup complete, calling typesetPromise.");
+                        return MathJax.typesetPromise();
+                    }).then(() => {
+                        console.log("MathJax typesetting complete.");
+                    }).catch((err) => console.error('MathJax error during typesetting:', err));
+                } else if (MathJax.typeset) {
+                    // Fallback for older/different MathJax versions or configurations
+                    console.log("Using MathJax.typeset() as a fallback.");
+                    MathJax.typeset();
+                    console.log("MathJax.typeset() fallback complete.");
+                } else {
+                    console.log("MathJax is defined, but no typesetting method (startup.promise or typeset) found.");
+                }
+            } else {
+                console.log("MathJax not found.");
+            }
+        });
+    </script>
+</body>
+
+</html>
