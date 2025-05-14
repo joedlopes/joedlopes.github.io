@@ -181,8 +181,7 @@
         #copyrightInfo {
             position: absolute;
             bottom: 10px;
-            left: 10px;
-            /* Changed from right to left */
+            right: 10px;
             font-size: 12px;
             color: #aaa;
             z-index: 5;
@@ -256,7 +255,7 @@
                 font-size: 10px;
                 padding: 2px 5px;
                 bottom: 5px;
-                left: 5px;
+                right: 5px;
             }
         }
     </style>
@@ -342,9 +341,9 @@
         </div>
         <hr style="border-color: #444; margin: 20px 0;">
         <h4>Current State</h4>
-        <div class="info-text">Arm 1 Angle ($\theta_1$): <span id="currentTheta1Display" class="info-value">N/A</span>°
+        <div class="info-text">Arm 1 Angle (Theta 1): <span id="currentTheta1Display" class="info-value">N/A</span>°
         </div>
-        <div class="info-text">Arm 2 Angle ($\theta_2$): <span id="currentTheta2Display" class="info-value">N/A</span>°
+        <div class="info-text">Arm 2 Angle (Theta 2): <span id="currentTheta2Display" class="info-value">N/A</span>°
         </div>
         <div class="info-text">End Effector (World Y,Z): <span id="endEffectorPosDisplay"
                 class="info-value-coords">N/A</span></div>
@@ -387,30 +386,30 @@
 
         // Simulation parameters
         const params = {
-            targetY_ui: 0.5, // Target Y in UI (relative to arm base pivot Y)
-            targetZ_ui: 0.5, // Target Z in UI (relative to arm base pivot Z)
-            robotFixedX: 0.0, // Robot base is fixed at X=0
-            targetVisualOffsetX: 0.05, // Slight offset for target sphere visibility
+            targetY_ui: 0.5,
+            targetZ_ui: 0.5,
+            robotFixedX: 0.0,
+            targetVisualOffsetX: 0.05,
             initialTheta1Deg: 30,
             initialTheta2Deg: 45,
             currentTheta1Rad: THREE.MathUtils.degToRad(30),
             currentTheta2Rad: THREE.MathUtils.degToRad(45),
-            gdStepSize: 0.01, // Learning rate for gradient descent
-            gdNumSteps: 10,   // Number of steps for the "Play" button
+            gdStepSize: 0.01,
+            gdNumSteps: 10,
             arm1Length: 1.0,
             arm2Length: 1.0,
-            baseHeight: 0.75, // Height of the vertical base cylinder
+            baseHeight: 0.75,
             jointRadius: 0.1,
             armRadius: 0.07,
-            baseRadius: 0.12, // Radius of the base cylinder
+            baseRadius: 0.12,
             endEffectorRadius: 0.08,
             startMarkerRadius: 0.06,
+            trailOffsetX: 0.15, // Offset for the trail line along the X-axis for better visibility
         };
 
         init();
         animate();
 
-        // Function to create a simple chessboard texture for the floor
         function createChessboardTexture(size = 512, squares = 10) {
             const canvas = document.createElement('canvas');
             canvas.width = size;
@@ -419,47 +418,42 @@
             const squareSize = size / squares;
             for (let i = 0; i < squares; i++) {
                 for (let j = 0; j < squares; j++) {
-                    context.fillStyle = (i + j) % 2 === 0 ? '#DDDDDD' : '#AAAAAA'; // Alternating colors
+                    context.fillStyle = (i + j) % 2 === 0 ? '#DDDDDD' : '#AAAAAA';
                     context.fillRect(i * squareSize, j * squareSize, squareSize, squareSize);
                 }
             }
             const texture = new THREE.CanvasTexture(canvas);
-            texture.colorSpace = THREE.SRGBColorSpace; // Important for correct color display
+            texture.colorSpace = THREE.SRGBColorSpace;
             return texture;
         }
 
-        // Initialize the Three.js scene, camera, renderer, and objects
         function init() {
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x333840); // Dark grey background
+            scene.background = new THREE.Color(0x333840);
 
-            // Camera setup
             camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
-            camera.position.set(params.robotFixedX + 5, params.baseHeight + 1.0, 0); // Positioned to view the robot from the side
-            camera.lookAt(params.robotFixedX, params.baseHeight + 0.5, 0); // Look at the robot's base area
+            camera.position.set(params.robotFixedX + 5, params.baseHeight + 1.0, 0);
+            camera.lookAt(params.robotFixedX, params.baseHeight + 0.5, 0);
 
-            // Renderer setup
             const threeCanvas = document.getElementById('threeCanvas');
             renderer = new THREE.WebGLRenderer({ canvas: threeCanvas, antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.shadowMap.enabled = true; // Enable shadows
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Softer shadows
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-            // OrbitControls for camera manipulation
             controls = new OrbitControls(camera, renderer.domElement);
-            controls.target.set(params.robotFixedX, params.baseHeight + 0.5, 0); // Orbit around the robot's base
+            controls.target.set(params.robotFixedX, params.baseHeight + 0.5, 0);
             controls.enableDamping = true;
             controls.dampingFactor = 0.05;
             controls.minDistance = 1;
             controls.maxDistance = 20;
 
-            // Lighting
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
             scene.add(ambientLight);
             const directionalLight = new THREE.DirectionalLight(0xffffff, 0.9);
-            directionalLight.position.set(params.robotFixedX + 3, params.baseHeight + 5, 4); // Position light to cast shadows
+            directionalLight.position.set(params.robotFixedX + 3, params.baseHeight + 5, 4);
             directionalLight.castShadow = true;
-            directionalLight.shadow.mapSize.width = 2048; // Shadow map quality
+            directionalLight.shadow.mapSize.width = 2048;
             directionalLight.shadow.mapSize.height = 2048;
             directionalLight.shadow.camera.near = 0.5;
             directionalLight.shadow.camera.far = 15;
@@ -469,130 +463,114 @@
             directionalLight.shadow.camera.bottom = -5;
             scene.add(directionalLight);
 
-            // Floor
             const floorTexture = createChessboardTexture();
             floorTexture.wrapS = THREE.RepeatWrapping;
             floorTexture.wrapT = THREE.RepeatWrapping;
-            floorTexture.repeat.set(10, 10); // Repeat texture for a larger floor
+            floorTexture.repeat.set(10, 10);
             const floorMaterial = new THREE.MeshPhongMaterial({ map: floorTexture, side: THREE.DoubleSide });
             const floorGeometry = new THREE.PlaneGeometry(20, 20);
             const floorMesh = new THREE.Mesh(floorGeometry, floorMaterial);
-            floorMesh.rotation.x = -Math.PI / 2; // Rotate to be horizontal
-            floorMesh.position.y = 0; // Floor at Y=0
-            floorMesh.receiveShadow = true; // Floor receives shadows
+            floorMesh.rotation.x = -Math.PI / 2;
+            floorMesh.position.y = 0;
+            floorMesh.receiveShadow = true;
             scene.add(floorMesh);
 
-            // Robot Arm Materials
-            const baseMaterial = new THREE.MeshPhongMaterial({ color: 0x000000 }); // Black base
-            const jointMaterial = new THREE.MeshPhongMaterial({ color: 0x0077cc }); // Blue joints
-            const armMaterial = new THREE.MeshPhongMaterial({ color: 0xff8c00 });   // Orange arms
-            const endEffectorMaterial = new THREE.MeshPhongMaterial({ color: 0x00cc00, opacity: 0.8, transparent: true }); // Green end effector
-            const targetMaterial = new THREE.MeshPhongMaterial({ color: 0xcc0000, opacity: 0.7, transparent: true }); // Red target
-            const startMarkerMaterial = new THREE.MeshPhongMaterial({ color: 0x0000cc }); // Blue start marker
+            const baseMaterial = new THREE.MeshPhongMaterial({ color: 0x000000 });
+            const jointMaterial = new THREE.MeshPhongMaterial({ color: 0x0077cc });
+            const armMaterial = new THREE.MeshPhongMaterial({ color: 0xff8c00 });
+            const endEffectorMaterial = new THREE.MeshPhongMaterial({ color: 0x00cc00, opacity: 0.8, transparent: true });
+            const targetMaterial = new THREE.MeshPhongMaterial({ color: 0xcc0000, opacity: 0.7, transparent: true });
+            const startMarkerMaterial = new THREE.MeshPhongMaterial({ color: 0x0000cc });
 
 
-            // Robot Base Cylinder (Vertical Y-up)
             const baseGeom = new THREE.CylinderGeometry(params.baseRadius, params.baseRadius, params.baseHeight, 32);
             baseCylinderMesh = new THREE.Mesh(baseGeom, baseMaterial);
-            baseCylinderMesh.position.set(params.robotFixedX, params.baseHeight / 2, 0); // Centered, bottom at Y=0
+            baseCylinderMesh.position.set(params.robotFixedX, params.baseHeight / 2, 0);
             baseCylinderMesh.castShadow = true;
             baseCylinderMesh.receiveShadow = true;
             scene.add(baseCylinderMesh);
 
-            // Joint 1 Sphere (On top of the base cylinder)
             const sphereGeom = new THREE.SphereGeometry(params.jointRadius, 16, 16);
             joint1SphereMesh = new THREE.Mesh(sphereGeom, jointMaterial);
-            joint1SphereMesh.position.set(params.robotFixedX, params.baseHeight, 0); // Arm origin
+            joint1SphereMesh.position.set(params.robotFixedX, params.baseHeight, 0);
             joint1SphereMesh.castShadow = true;
             joint1SphereMesh.receiveShadow = true;
             scene.add(joint1SphereMesh);
 
-            // Arm 1 Pivot Group (all subsequent parts are relative to this pivot)
             arm1Pivot = new THREE.Group();
-            arm1Pivot.position.copy(joint1SphereMesh.position); // Pivot at Joint 1 location
+            arm1Pivot.position.copy(joint1SphereMesh.position);
             scene.add(arm1Pivot);
 
-            // Arm 1 Cylinder
             arm1CylinderMesh = new THREE.Mesh(
                 new THREE.CylinderGeometry(params.armRadius, params.armRadius, params.arm1Length, 16),
                 armMaterial
             );
-            // Position arm cylinder so its base is at the pivot point (0,0,0 of arm1Pivot)
             arm1CylinderMesh.position.y = params.arm1Length / 2;
             arm1CylinderMesh.castShadow = true;
             arm1CylinderMesh.receiveShadow = true;
             arm1Pivot.add(arm1CylinderMesh);
 
-            // Joint 2 Sphere (at the end of Arm 1)
             joint2SphereMesh = new THREE.Mesh(sphereGeom, jointMaterial);
-            joint2SphereMesh.position.y = params.arm1Length; // Position relative to arm1Pivot
+            joint2SphereMesh.position.y = params.arm1Length;
             joint2SphereMesh.castShadow = true;
             joint2SphereMesh.receiveShadow = true;
             arm1Pivot.add(joint2SphereMesh);
 
-            // Arm 2 Pivot Group (child of Joint 2, so its position is relative to Joint 2)
             arm2Pivot = new THREE.Group();
-            joint2SphereMesh.add(arm2Pivot); // Arm 2 pivots around Joint 2
+            joint2SphereMesh.add(arm2Pivot);
 
-            // Arm 2 Cylinder
             arm2CylinderMesh = new THREE.Mesh(
                 new THREE.CylinderGeometry(params.armRadius, params.armRadius, params.arm2Length, 16),
                 armMaterial
             );
-            arm2CylinderMesh.position.y = params.arm2Length / 2; // Position relative to arm2Pivot
+            arm2CylinderMesh.position.y = params.arm2Length / 2;
             arm2CylinderMesh.castShadow = true;
             arm2CylinderMesh.receiveShadow = true;
             arm2Pivot.add(arm2CylinderMesh);
 
-            // End Effector Sphere (at the end of Arm 2)
             endEffectorSphere = new THREE.Mesh(
                 new THREE.SphereGeometry(params.endEffectorRadius, 16, 16),
                 endEffectorMaterial
             );
-            endEffectorSphere.position.y = params.arm2Length; // Position relative to arm2Pivot
+            endEffectorSphere.position.y = params.arm2Length;
             endEffectorSphere.castShadow = true;
             endEffectorSphere.receiveShadow = true;
             arm2Pivot.add(endEffectorSphere);
 
-            // Start Marker (sphere to show initial position of end effector)
             startMarkerMesh = new THREE.Mesh(
                 new THREE.SphereGeometry(params.startMarkerRadius, 16, 16),
                 startMarkerMaterial
             );
-            startMarkerMesh.visible = false; // Initially hidden
+            startMarkerMesh.visible = false;
             scene.add(startMarkerMesh);
 
-            // Target Sphere
             targetSphereMesh = new THREE.Mesh(
-                new THREE.SphereGeometry(params.endEffectorRadius * 1.1, 16, 16), // Slightly larger than end effector
+                new THREE.SphereGeometry(params.endEffectorRadius * 1.1, 16, 16),
                 targetMaterial
             );
             targetSphereMesh.castShadow = true;
             targetSphereMesh.receiveShadow = true;
             scene.add(targetSphereMesh);
 
-            // Line to trace end effector path
-            const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffff00, linewidth: 2 }); // Bright yellow line
-            const lineGeometry = new THREE.BufferGeometry(); // Will be updated with points
+            const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffff00, linewidth: 2 });
+            const lineGeometry = new THREE.BufferGeometry();
             endEffectorPathLine = new THREE.Line(lineGeometry, lineMaterial);
             scene.add(endEffectorPathLine);
 
-            // Setup UI controls and initial state
             setupUI();
             updateRobotArmVisuals(params.currentTheta1Rad, params.currentTheta2Rad);
             updateTargetSpherePosition();
-            resetGradientDescent(); // Sets initial angles and path
+            resetGradientDescent();
 
-            // Mobile Menu Logic
             const menuButton = document.getElementById('menuButton');
             const controlsPanel = document.getElementById('controls');
             menuButton.addEventListener('click', (event) => {
                 event.stopPropagation();
                 controlsPanel.classList.toggle('open');
                 if (controlsPanel.classList.contains('open')) {
-                    menuButton.innerHTML = '&#x25C0;'; // Left arrow
+                    menuButton.innerHTML = '&#x25C0;';
                 } else {
-                    menuButton.innerHTML = '&#x25B6;'; // Right arrow
+                    menuButton.innerHTML = '&#x25B6;';
                 }
             });
             document.addEventListener('click', function (event) {
@@ -607,72 +585,57 @@
             });
 
             window.addEventListener('resize', onWindowResize);
-            checkMobileControlsState(); // Initial check for mobile layout
+            checkMobileControlsState();
         }
 
-        // Updates the robot arm's visual rotation based on given angles (in radians)
         function updateRobotArmVisuals(theta1, theta2) {
-            arm1Pivot.rotation.x = theta1; // Arm 1 rotates around X-axis relative to its base
-            arm2Pivot.rotation.x = theta2; // Arm 2 rotates around X-axis relative to Arm 1's end
+            arm1Pivot.rotation.x = theta1;
+            arm2Pivot.rotation.x = theta2;
 
-            params.currentTheta1Rad = theta1; // Store current angles
+            params.currentTheta1Rad = theta1;
             params.currentTheta2Rad = theta2;
-            updateUIDisplays(); // Update displayed values
+            updateUIDisplays();
         }
 
-        // Calculates the world position of the end effector given joint angles
         function forwardKinematics(theta1, theta2) {
             const L1 = params.arm1Length;
             const L2 = params.arm2Length;
-            // Arm pivot (Joint 1) is at (params.robotFixedX, params.baseHeight, 0)
-            // For rotation around X-axis in YZ plane (Y-up, Z-right from front view):
-            // Y_component = L * cos(angle)
-            // Z_component = L * sin(angle)
             const y_relative = L1 * Math.cos(theta1) + L2 * Math.cos(theta1 + theta2);
             const z_relative = L1 * Math.sin(theta1) + L2 * Math.sin(theta1 + theta2);
 
             return new THREE.Vector3(
-                params.robotFixedX,                  // X is constant
-                params.baseHeight + y_relative,      // World Y: base height + Y component from angles
-                0 + z_relative                       // World Z: base Z (0) + Z component from angles
+                params.robotFixedX,
+                params.baseHeight + y_relative,
+                0 + z_relative
             );
         }
 
-        // Calculates the gradient of the squared distance error with respect to theta1 and theta2
         function calculateGradient(theta1, theta2, targetPosVec3) {
             const L1 = params.arm1Length;
             const L2 = params.arm2Length;
-            const currentPos = forwardKinematics(theta1, theta2); // Current end effector position
+            const currentPos = forwardKinematics(theta1, theta2);
 
-            // Error components (difference between current and target position)
             const dy = currentPos.y - targetPosVec3.y;
             const dz = currentPos.z - targetPosVec3.z;
 
-            // Partial derivatives of end effector position with respect to angles
-            // d(Ye)/d(theta1), d(Ze)/d(theta1), d(Ye)/d(theta2), d(Ze)/d(theta2)
             const sin_t1 = Math.sin(theta1);
             const cos_t1 = Math.cos(theta1);
             const sin_t1_t2 = Math.sin(theta1 + theta2);
             const cos_t1_t2 = Math.cos(theta1 + theta2);
 
-            const dYe_dt1 = -L1 * sin_t1 - L2 * sin_t1_t2; // d(y_pos)/d(theta1)
-            const dZe_dt1 = L1 * cos_t1 + L2 * cos_t1_t2; // d(z_pos)/d(theta1)
+            const dYe_dt1 = -L1 * sin_t1 - L2 * sin_t1_t2;
+            const dZe_dt1 = L1 * cos_t1 + L2 * cos_t1_t2;
 
-            const dYe_dt2 = -L2 * sin_t1_t2;              // d(y_pos)/d(theta2)
-            const dZe_dt2 = L2 * cos_t1_t2;              // d(z_pos)/d(theta2)
+            const dYe_dt2 = -L2 * sin_t1_t2;
+            const dZe_dt2 = L2 * cos_t1_t2;
 
-            // Gradient of squared error: 2 * error * (d_error/d_theta)
-            // Here, error is (current_pos - target_pos), so d_error/d_theta is d_current_pos/d_theta
-            // Gradient for theta1: 2 * (dy * dYe_dt1 + dz * dZe_dt1). We can drop the factor of 2.
             const gradTheta1 = dy * dYe_dt1 + dz * dZe_dt1;
             const gradTheta2 = dy * dYe_dt2 + dz * dZe_dt2;
 
             return { gradTheta1, gradTheta2 };
         }
 
-        // Performs one step of gradient descent to update arm angles
         function performGradientDescentStep() {
-            // Target position in world coordinates
             const targetPos = new THREE.Vector3(
                 params.robotFixedX,
                 params.baseHeight + params.targetY_ui,
@@ -680,33 +643,34 @@
             );
             const grad = calculateGradient(params.currentTheta1Rad, params.currentTheta2Rad, targetPos);
 
-            // Update angles by moving in the opposite direction of the gradient
             let newTheta1 = params.currentTheta1Rad - params.gdStepSize * grad.gradTheta1;
             let newTheta2 = params.currentTheta2Rad - params.gdStepSize * grad.gradTheta2;
 
-            updateRobotArmVisuals(newTheta1, newTheta2); // Apply new angles to the visual model
+            updateRobotArmVisuals(newTheta1, newTheta2);
 
-            // Record path of end effector
             const eeWorldPos = new THREE.Vector3();
-            endEffectorSphere.getWorldPosition(eeWorldPos); // Get current world position of end effector
-            endEffectorPathPoints.push(eeWorldPos.clone());
-            if (endEffectorPathPoints.length > 300) { // Keep path length manageable
+            endEffectorSphere.getWorldPosition(eeWorldPos);
+
+            // Create a new point for the trail with an X offset
+            const trailPoint = eeWorldPos.clone();
+            trailPoint.x += params.trailOffsetX;
+            endEffectorPathPoints.push(trailPoint); // Add the offset point
+
+            if (endEffectorPathPoints.length > 300) {
                 endEffectorPathPoints.shift();
             }
-            updateEndEffectorPathLine(); // Redraw the path
+            updateEndEffectorPathLine();
         }
 
-        // Updates the line tracing the end effector's path
         function updateEndEffectorPathLine() {
-            if (endEffectorPathPoints.length > 1) { // Need at least 2 points for a line
+            if (endEffectorPathPoints.length > 1) {
                 endEffectorPathLine.geometry.setFromPoints(endEffectorPathPoints);
             } else {
-                endEffectorPathLine.geometry.setFromPoints([]); // Clear line if not enough points
+                endEffectorPathLine.geometry.setFromPoints([]);
             }
-            endEffectorPathLine.geometry.attributes.position.needsUpdate = true; // Tell Three.js to update
+            endEffectorPathLine.geometry.attributes.position.needsUpdate = true;
         }
 
-        // Handles the "Play" functionality for gradient descent
         function timedPlayStep() {
             if (!isGdPlaying || gdPlayStepCounter >= params.gdNumSteps) {
                 isGdPlaying = false;
@@ -719,12 +683,11 @@
             }
             performGradientDescentStep();
             gdPlayStepCounter++;
-            gdPlayTimeoutId = setTimeout(timedPlayStep, 75); // Delay between steps (ms)
+            gdPlayTimeoutId = setTimeout(timedPlayStep, 75);
         }
 
-        // Starts or stops the "Play" sequence
         function startTimedPlay() {
-            if (isGdPlaying) { // If already playing, stop it
+            if (isGdPlaying) {
                 clearTimeout(gdPlayTimeoutId);
                 isGdPlaying = false;
                 document.getElementById('gdPlayButton').disabled = false;
@@ -733,7 +696,6 @@
                 document.getElementById('gdPlayButton').textContent = "Play IK Solver";
                 return;
             }
-            // Start playing
             isGdPlaying = true;
             gdPlayStepCounter = 0;
             document.getElementById('gdPlayButton').textContent = "Stop";
@@ -742,56 +704,54 @@
             timedPlayStep();
         }
 
-        // Resets the gradient descent process and robot arm to initial state
         function resetGradientDescent() {
-            if (isGdPlaying) { // Stop any ongoing play sequence
+            if (isGdPlaying) {
                 clearTimeout(gdPlayTimeoutId);
                 isGdPlaying = false;
                 gdPlayStepCounter = 0;
             }
-            // Re-enable buttons
             document.getElementById('gdPlayButton').disabled = false;
             document.getElementById('gdPlayButton').textContent = "Play IK Solver";
             document.getElementById('gdNextStepButton').disabled = false;
             document.getElementById('gdResetButton').disabled = false;
 
-            // Reset angles to initial values
             params.currentTheta1Rad = THREE.MathUtils.degToRad(params.initialTheta1Deg);
             params.currentTheta2Rad = THREE.MathUtils.degToRad(params.initialTheta2Deg);
 
-            // Clear path and set start marker
             endEffectorPathPoints.length = 0;
             const initialEEPos = forwardKinematics(params.currentTheta1Rad, params.currentTheta2Rad);
-            endEffectorPathPoints.push(initialEEPos.clone()); // Start path with initial position
 
-            startMarkerMesh.position.copy(initialEEPos); // Place start marker
+            // Create the initial point for the trail with an X offset
+            const initialTrailPoint = initialEEPos.clone();
+            initialTrailPoint.x += params.trailOffsetX;
+            endEffectorPathPoints.push(initialTrailPoint); // Start path with the offset point
+
+            startMarkerMesh.position.copy(initialEEPos); // Start marker remains at the actual EE position
             startMarkerMesh.visible = true;
 
-            updateEndEffectorPathLine(); // Clear or reset path line
-            updateRobotArmVisuals(params.currentTheta1Rad, params.currentTheta2Rad); // Update visuals
+            updateEndEffectorPathLine();
+            updateRobotArmVisuals(params.currentTheta1Rad, params.currentTheta2Rad);
         }
 
-        // Updates the target sphere's position based on UI controls
         function updateTargetSpherePosition() {
             targetSphereMesh.position.set(
-                params.robotFixedX + params.targetVisualOffsetX, // X slightly offset for visibility
-                params.baseHeight + params.targetY_ui,         // World Y
-                params.targetZ_ui                              // World Z
+                params.robotFixedX + params.targetVisualOffsetX,
+                params.baseHeight + params.targetY_ui,
+                params.targetZ_ui
             );
-            if (!isGdPlaying) { // If not playing, reset GD to reflect new target
+            if (!isGdPlaying) {
                 resetGradientDescent();
-            } else { // If playing, just update displays (distance will change)
+            } else {
                 updateUIDisplays();
             }
         }
 
-        // Updates the text displays in the UI with current robot state
         function updateUIDisplays() {
             document.getElementById('currentTheta1Display').textContent = THREE.MathUtils.radToDeg(params.currentTheta1Rad).toFixed(2);
             document.getElementById('currentTheta2Display').textContent = THREE.MathUtils.radToDeg(params.currentTheta2Rad).toFixed(2);
 
             const eePosWorld = new THREE.Vector3();
-            endEffectorSphere.getWorldPosition(eePosWorld); // Get current world position of end effector
+            endEffectorSphere.getWorldPosition(eePosWorld);
             document.getElementById('endEffectorPosDisplay').textContent = `(${eePosWorld.y.toFixed(2)}, ${eePosWorld.z.toFixed(2)})`;
 
             const targetPosVec = new THREE.Vector3(
@@ -803,7 +763,6 @@
             document.getElementById('distanceToTargetDisplay').textContent = distance.toFixed(4);
         }
 
-        // Sets up UI element event listeners and initial values
         function setupUI() {
             const targetY_ui_Input = document.getElementById('targetY_ui');
             targetY_ui_Input.addEventListener('input', e => {
@@ -862,15 +821,13 @@
             document.getElementById('gdResetButton').addEventListener('click', resetGradientDescent);
         }
 
-        // Handles window resize events
         function onWindowResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
-            checkMobileControlsState(); // Check and adjust mobile menu state
+            checkMobileControlsState();
         }
 
-        // Manages the visibility and state of the controls panel for mobile/desktop
         function checkMobileControlsState() {
             const isMobile = window.innerWidth <= 768;
             const controlsPanel = document.getElementById('controls');
@@ -879,37 +836,33 @@
 
             if (isMobile) {
                 menuButtonContainer.style.display = 'block';
-                // Clear potentially conflicting inline styles from desktop view
                 controlsPanel.style.position = '';
                 controlsPanel.style.left = '';
                 controlsPanel.style.top = '';
                 controlsPanel.style.width = '';
                 controlsPanel.style.height = '';
                 controlsPanel.style.maxHeight = '';
-                // Set initial arrow direction
                 if (controlsPanel.classList.contains('open')) {
-                    menuButton.innerHTML = '&#x25C0;'; // Left arrow
+                    menuButton.innerHTML = '&#x25C0;';
                 } else {
-                    menuButton.innerHTML = '&#x25B6;'; // Right arrow
+                    menuButton.innerHTML = '&#x25B6;';
                 }
-            } else { // Desktop view
+            } else {
                 menuButtonContainer.style.display = 'none';
-                controlsPanel.classList.remove('open'); // Ensure panel is not in 'open' state
-                // Restore desktop styles
+                controlsPanel.classList.remove('open');
                 controlsPanel.style.position = 'absolute';
                 controlsPanel.style.left = '10px';
                 controlsPanel.style.top = '10px';
                 controlsPanel.style.width = '320px';
-                controlsPanel.style.height = 'calc(100vh - 20px)'; // Max height for desktop
+                controlsPanel.style.height = 'calc(100vh - 20px)';
                 controlsPanel.style.maxHeight = 'calc(100vh - 20px)';
-                controlsPanel.style.paddingTop = ''; // Remove mobile-specific padding
+                controlsPanel.style.paddingTop = '';
             }
         }
 
-        // Animation loop
         function animate() {
             requestAnimationFrame(animate);
-            controls.update(); // Required if enableDamping is true
+            controls.update();
             renderer.render(scene, camera);
         }
     </script>

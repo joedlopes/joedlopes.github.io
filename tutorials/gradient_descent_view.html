@@ -6,9 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interactive Gradient Descent Visualization Tutorial | 3D Function Optimization Examples</title>
     <meta name="description"
-        content="Explore and learn about gradient descent algorithms (Standard, Momentum, ADAM) interactively with this 3D visualization tool. See optimization paths on various mathematical functions like Himmelblau, Paraboloid, and Rastrigin. A visual tutorial for understanding optimization.">
+        content="Explore and learn about gradient descent algorithms (Standard, Momentum, ADAM) interactively with this 3D visualization tool. See optimization paths on various mathematical functions like Himmelblau, Paraboloid, Rastrigin, Rosenbrock, Ackley, and Six-hump camel. A visual tutorial for understanding optimization.">
     <meta name="keywords"
-        content="gradient descent, optimization, 3D visualization, interactive tutorial, machine learning, deep learning, mathematical functions, Himmelblau, Rastrigin, Paraboloid, ADAM optimizer, Momentum optimizer, learning tool, data science education">
+        content="gradient descent, optimization, 3D visualization, interactive tutorial, machine learning, deep learning, mathematical functions, Himmelblau, Rastrigin, Paraboloid, Rosenbrock, Ackley, Six-hump camel, ADAM optimizer, Momentum optimizer, learning tool, data science education">
 
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://joedlopes.github.io/">
@@ -418,11 +418,11 @@
       "@context": "https://schema.org",
       "@type": "LearningResource",
       "name": "Interactive Gradient Descent Visualization Tutorial",
-      "description": "Explore and learn about gradient descent algorithms (Standard, Momentum, ADAM) interactively with this 3D visualization tool. See optimization paths on various mathematical functions like Himmelblau, Paraboloid, and Rastrigin. A visual tutorial for understanding optimization.",
+      "description": "Explore and learn about gradient descent algorithms (Standard, Momentum, ADAM) interactively with this 3D visualization tool. See optimization paths on various mathematical functions like Himmelblau, Paraboloid, Rastrigin, Rosenbrock, Ackley, and Six-hump camel. A visual tutorial for understanding optimization.",
       "learningResourceType": "interactive simulation",
       "interactivityType": "active",
       "educationalUse": ["demonstration", "learning", "tutorial"],
-      "keywords": "gradient descent, optimization, 3D visualization, machine learning, deep learning, mathematical functions, Himmelblau, Rastrigin, Paraboloid, ADAM optimizer, Momentum optimizer",
+      "keywords": "gradient descent, optimization, 3D visualization, machine learning, deep learning, mathematical functions, Himmelblau, Rastrigin, Paraboloid, Rosenbrock, Ackley, Six-hump camel, ADAM optimizer, Momentum optimizer",
       "author": {
         "@type": "Person",
         "name": "Joed",
@@ -435,8 +435,8 @@
       },
       "isAccessibleForFree": true,
       "browserRequirements": "Requires JavaScript and WebGL support.",
-       "applicationCategory": "EducationApplication",
-       "operatingSystem": "All (web-based)"
+        "applicationCategory": "EducationApplication",
+        "operatingSystem": "All (web-based)"
     }
     </script>
 </head>
@@ -551,16 +551,16 @@
 
             <div id="standardOptTab" class="optimizer-tab-content active">
                 <label for="vanillaGdStepSize">Step Size (Learning Rate): <span id="vanillaGdStepSizeValue"
-                        class="param-value">0.010</span></label>
-                <input type="range" id="vanillaGdStepSize" min="0.001" max="1.0" step="0.001" value="0.01">
+                        class="param-value">0.0100</span></label>
+                <input type="range" id="vanillaGdStepSize" min="0.0001" max="1.0" step="0.0001" value="0.01">
             </div>
             <div id="momentumOptTab" class="optimizer-tab-content">
                 <label for="momentumBeta">Beta (Momentum Factor): <span id="momentumBetaValue"
                         class="param-value">0.9</span></label>
                 <input type="range" id="momentumBeta" min="0.0" max="0.99" step="0.01" value="0.9">
                 <label for="momentumStepSize">Step Size (Learning Rate): <span id="momentumStepSizeValue"
-                        class="param-value">0.010</span></label>
-                <input type="range" id="momentumStepSize" min="0.001" max="1.0" step="0.001" value="0.01">
+                        class="param-value">0.0100</span></label>
+                <input type="range" id="momentumStepSize" min="0.0001" max="1.0" step="0.0001" value="0.01">
             </div>
             <div id="adamOptTab" class="optimizer-tab-content">
                 <label for="adamBeta1">Beta1 (Adam): <span id="adamBeta1Value" class="param-value">0.9</span></label>
@@ -572,8 +572,8 @@
                 <input type="number" id="adamEpsilon" step="1e-9" value="1e-8"
                     title="Small constant for numerical stability in ADAM optimizer.">
                 <label for="adamStepSize">Step Size (Learning Rate): <span id="adamStepSizeValue"
-                        class="param-value">0.010</span></label>
-                <input type="range" id="adamStepSize" min="0.001" max="1.0" step="0.001" value="0.01">
+                        class="param-value">0.0100</span></label>
+                <input type="range" id="adamStepSize" min="0.0001" max="1.0" step="0.0001" value="0.01">
             </div>
 
             <hr style="border-color: #444; margin: 15px 0;">
@@ -663,18 +663,18 @@
             liveGradientArrowColor: 0x00ffff,
 
             // Optimizer specific parameters
-            vanillaGdStepSize: 0.01,
-            momentumStepSize: 0.01,
+            vanillaGdStepSize: 0.01, // Default value
+            momentumStepSize: 0.01,  // Default value
             momentumBeta: 0.9,
             momentumVelocityX: 0,
             momentumVelocityY: 0,
-            adamStepSize: 0.01,
+            adamStepSize: 0.01,      // Default value
             adamBeta1: 0.9,
             adamBeta2: 0.999,
             adamEpsilon: 1e-8,
             adamM_dx: 0, adamM_dy: 0, // 1st moment vector for ADAM
             adamV_dx: 0, adamV_dy: 0, // 2nd moment vector for ADAM
-            adamT: 0                   // Timestep for ADAM bias correction
+            adamT: 0                  // Timestep for ADAM bias correction
         };
 
         // --- Mathematical Functions & Their Properties ---
@@ -721,21 +721,88 @@
                 },
                 domain: { minX: -5.12, maxX: 5.12, minY: -5.12, maxY: 5.12 },
                 minima: [new THREE.Vector2(0, 0)] // Global minimum
+            },
+            rosenbrock: {
+                name: "Rosenbrock Function",
+                formulaTex: "f(x, y) = (1-x)^2 + 100(y-x^2)^2",
+                evaluate: (x, y) => {
+                    const a = 1;
+                    const b = 100;
+                    return Math.pow(a - x, 2) + b * Math.pow(y - x * x, 2);
+                },
+                gradient: (x, y) => {
+                    const a = 1;
+                    const b = 100;
+                    const df_dx = -2 * (a - x) - 4 * b * x * (y - x * x);
+                    const df_dy = 2 * b * (y - x * x);
+                    return new THREE.Vector2(df_dx, df_dy);
+                },
+                domain: { minX: -2, maxX: 2, minY: -1, maxY: 3 },
+                minima: [new THREE.Vector2(1, 1)] // Global minimum at f(1,1)=0
+            },
+            ackley: {
+                name: "Ackley Function",
+                formulaTex: "f(x,y) = -20\\exp(-0.2\\sqrt{0.5(x^2+y^2)}) - \\exp(0.5(\\cos(2\\pi x) + \\cos(2\\pi y))) + 20 + e",
+                evaluate: (x, y) => {
+                    const a = 20, b = 0.2, c = 2 * Math.PI;
+                    const term1 = -a * Math.exp(-b * Math.sqrt(0.5 * (x * x + y * y)));
+                    const term2 = -Math.exp(0.5 * (Math.cos(c * x) + Math.cos(c * y)));
+                    return term1 + term2 + a + Math.exp(1);
+                },
+                gradient: (x, y) => {
+                    const a = 20, b = 0.2, c = 2 * Math.PI;
+                    const sqrt_term = Math.sqrt(0.5 * (x * x + y * y));
+
+                    let df_dx_term1 = 0;
+                    let df_dy_term1 = 0;
+
+                    if (sqrt_term > 1e-9) { // Avoid division by zero if x and y are both zero
+                        df_dx_term1 = (a * b * x * Math.exp(-b * sqrt_term)) / (sqrt_term * Math.sqrt(2));
+                        df_dy_term1 = (a * b * y * Math.exp(-b * sqrt_term)) / (sqrt_term * Math.sqrt(2));
+                    }
+
+                    const exp_cos_term = Math.exp(0.5 * (Math.cos(c * x) + Math.cos(c * y)));
+                    const df_dx_term2 = 0.5 * c * Math.sin(c * x) * exp_cos_term;
+                    const df_dy_term2 = 0.5 * c * Math.sin(c * y) * exp_cos_term;
+
+                    return new THREE.Vector2(df_dx_term1 + df_dx_term2, df_dy_term1 + df_dy_term2);
+                },
+                domain: { minX: -5, maxX: 5, minY: -5, maxY: 5 },
+                minima: [new THREE.Vector2(0, 0)] // Global minimum at f(0,0)=0
+            },
+            sixHumpCamel: {
+                name: "Six-hump Camel Function",
+                formulaTex: "f(x,y) = (4 - 2.1x^2 + \\frac{x^4}{3})x^2 + xy + (-4 + 4y^2)y^2",
+                evaluate: (x, y) => {
+                    const term1 = (4 - 2.1 * x * x + (Math.pow(x, 4) / 3)) * x * x;
+                    const term2 = x * y;
+                    const term3 = (-4 + 4 * y * y) * y * y;
+                    return term1 + term2 + term3;
+                },
+                gradient: (x, y) => {
+                    const df_dx = (8 * x - 8.4 * Math.pow(x, 3) + (4 * Math.pow(x, 5) / 3)) + y;
+                    const df_dy = x + (-8 * y + 16 * Math.pow(y, 3));
+                    return new THREE.Vector2(df_dx, df_dy);
+                },
+                domain: { minX: -2.5, maxX: 2.5, minY: -1.5, maxY: 1.5 },
+                minima: [
+                    new THREE.Vector2(0.0898, -0.7126),
+                    new THREE.Vector2(-0.0898, 0.7126)
+                ]
             }
-            // Add more functions here as needed
         };
 
         // --- Colormaps for Visualization ---
         const colormaps = {
             jet: {
                 name: "Jet",
-                evaluate: (value) => { // value is normalized 0-1
+                evaluate: (value) => {
                     const jetKeyColors = [
-                        new THREE.Color(0, 0, 1),    // Blue
-                        new THREE.Color(0, 1, 1),    // Cyan
-                        new THREE.Color(1, 1, 0),    // Yellow
-                        new THREE.Color(1, 0.5, 0),  // Orange
-                        new THREE.Color(1, 0, 0)     // Red
+                        new THREE.Color(0, 0, 1),   // Blue
+                        new THREE.Color(0, 1, 1),   // Cyan
+                        new THREE.Color(1, 1, 0),   // Yellow
+                        new THREE.Color(1, 0.5, 0), // Orange
+                        new THREE.Color(1, 0, 0)    // Red
                     ];
                     const numSegments = jetKeyColors.length - 1;
                     const segmentLength = 1.0 / numSegments;
@@ -767,10 +834,10 @@
                 name: "Hot",
                 evaluate: (value) => {
                     const hotKeyColors = [
-                        new THREE.Color(0, 0, 0),      // Black
-                        new THREE.Color(1, 0, 0),      // Red
-                        new THREE.Color(1, 1, 0),      // Yellow
-                        new THREE.Color(1, 1, 1)       // White
+                        new THREE.Color(0, 0, 0),     // Black
+                        new THREE.Color(1, 0, 0),     // Red
+                        new THREE.Color(1, 1, 0),     // Yellow
+                        new THREE.Color(1, 1, 1)      // White
                     ];
                     const numSegments = hotKeyColors.length - 1;
                     const segmentLength = 1.0 / numSegments;
@@ -779,21 +846,20 @@
                     return new THREE.Color().lerpColors(hotKeyColors[segmentIndex], hotKeyColors[segmentIndex + 1], t);
                 }
             },
-            hsv: { // Hue cycle
+            hsv: {
                 name: "HSV (Hue Cycle)",
                 evaluate: (value) => {
-                    return new THREE.Color().setHSL(value, 1.0, 0.5); // Hue, Saturation, Lightness
+                    return new THREE.Color().setHSL(value, 1.0, 0.5);
                 }
             },
-            tab20: { // Good for discrete levels if needed, but used continuously here
+            tab20: {
                 name: "Tab20 (Banded)",
                 evaluate: (value) => {
-                    const tab20ColorsHex = [ // From Matplotlib's tab20
+                    const tab20ColorsHex = [
                         0x1f77b4, 0xaec7e8, 0xff7f0e, 0xffbb78, 0x2ca02c, 0x98df8a, 0xd62728, 0xff9896,
                         0x9467bd, 0xc5b0d5, 0x8c564b, 0xc49c94, 0xe377c2, 0xf7b6d2, 0x7f7f7f, 0xc7c7c7,
                         0xbcbd22, 0xdbdb8d, 0x17becf, 0x9edae5
                     ];
-                    // Ensure index is within bounds, even for value = 1.0
                     const index = Math.min(Math.floor(value * tab20ColorsHex.length), tab20ColorsHex.length - 1);
                     return new THREE.Color(tab20ColorsHex[index]);
                 }
@@ -835,49 +901,44 @@
             document.getElementById(tabName).classList.add("active");
             evt.currentTarget.classList.add("active");
 
-            // Update current optimizer and reset GD state
             if (tabName === 'standardOptTab') params.currentOptimizerKey = 'standard';
             else if (tabName === 'momentumOptTab') params.currentOptimizerKey = 'momentum';
             else if (tabName === 'adamOptTab') params.currentOptimizerKey = 'adam';
 
             resetGradientDescent();
-            updateLiveGradientArrow(); // Reflect new optimizer's potential step
+            updateLiveGradientArrow();
         }
 
         // --- Three.js Setup ---
         function init() {
             clock = new THREE.Clock();
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x282c34); // Dark background
-            scene.fog = new THREE.Fog(scene.background, params.terrainSize * 2, params.terrainSize * 5); // Fog for depth
+            scene.background = new THREE.Color(0x282c34);
+            scene.fog = new THREE.Fog(scene.background, params.terrainSize * 2, params.terrainSize * 5);
 
-            // Camera
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             camera.position.set(params.terrainSize * 0.75, params.terrainSize * 0.75, params.terrainSize * 0.75);
 
-            // Renderer
             const threeCanvas = document.getElementById('threeCanvas');
             renderer = new THREE.WebGLRenderer({ canvas: threeCanvas, antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.shadowMap.enabled = true; // Enable shadows
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Softer shadows
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-            // OrbitControls
             controls = new OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
             controls.dampingFactor = 0.05;
             controls.minDistance = 2;
             controls.maxDistance = params.terrainSize * 3;
-            controls.maxPolarAngle = Math.PI / 2 - 0.01; // Prevent camera going below ground
+            controls.maxPolarAngle = Math.PI / 2 - 0.01;
 
-            // Lighting
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
             scene.add(ambientLight);
 
             const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
             directionalLight.position.set(params.terrainSize, params.terrainSize * 1.5, params.terrainSize * 0.5);
             directionalLight.castShadow = true;
-            directionalLight.shadow.mapSize.width = 2048; // Higher res shadow map
+            directionalLight.shadow.mapSize.width = 2048;
             directionalLight.shadow.mapSize.height = 2048;
             directionalLight.shadow.camera.near = 0.5;
             directionalLight.shadow.camera.far = params.terrainSize * 4;
@@ -887,27 +948,22 @@
             directionalLight.shadow.camera.top = shadowCamSize;
             directionalLight.shadow.camera.bottom = -shadowCamSize;
             scene.add(directionalLight);
-            // const helper = new THREE.CameraHelper( directionalLight.shadow.camera ); // For debugging shadow camera
-            // scene.add( helper );
 
-            scene.add(contourLinesGroup); // Add contour group to scene
+            scene.add(contourLinesGroup);
 
-            // Setup UI, initial function, and terrain
             setupUI();
             updateFunctionSelection();
             regenerateTerrainAndGD();
 
-            // Mobile Menu Logic
             const menuButton = document.getElementById('menuButton');
             const controlsPanel = document.getElementById('controls');
             menuButton.addEventListener('click', (event) => {
                 event.stopPropagation();
                 controlsPanel.classList.toggle('open');
-                // Update button icon based on panel state
                 if (controlsPanel.classList.contains('open')) {
-                    menuButton.innerHTML = '&#x25C0;'; // Left arrow (panel is open)
+                    menuButton.innerHTML = '&#x25C0;';
                 } else {
-                    menuButton.innerHTML = '&#x25B6;'; // Right arrow (panel is closed)
+                    menuButton.innerHTML = '&#x25B6;';
                 }
             });
             document.addEventListener('click', function (event) {
@@ -916,7 +972,7 @@
                     const isClickInsideControls = controlsPanel.contains(event.target);
                     if (!isClickInsideControls) {
                         controlsPanel.classList.remove('open');
-                        menuButton.innerHTML = '&#x25B6;'; // Update to Right arrow when closed by outside click
+                        menuButton.innerHTML = '&#x25B6;';
                     }
                 }
             });
@@ -925,7 +981,6 @@
             checkMobileControlsState();
         }
 
-        // --- Helper Functions to Get Current Selections ---
         function getCurrentFunction() {
             return functions[params.currentFunctionKey];
         }
@@ -937,11 +992,10 @@
                 case 'standard': return params.vanillaGdStepSize;
                 case 'momentum': return params.momentumStepSize;
                 case 'adam': return params.adamStepSize;
-                default: return 0.01; // Fallback
+                default: return 0.01;
             }
         }
 
-        // --- Terrain (Function Plot) Generation ---
         function createTerrainGeometry() {
             const currentFunc = getCurrentFunction();
             const currentColormapEval = getCurrentColormap().evaluate;
@@ -1059,7 +1113,6 @@
             }
         }
 
-        // --- Contour Lines ---
         function updateContourLines() {
             while (contourLinesGroup.children.length > 0) {
                 const child = contourLinesGroup.children[0];
@@ -1131,7 +1184,6 @@
             }
         }
 
-        // --- Gradient Descent Optimizer Logic ---
         function performStandardGDStep() {
             const currentFunc = getCurrentFunction();
             const grad = currentFunc.gradient(params.gdCurrentX, params.gdCurrentY);
@@ -1187,7 +1239,6 @@
             updateGradientDescentVisuals();
         }
 
-        // --- Gradient Descent Animation ("Play" Button) ---
         let gdPlayStepCounter = 0;
         function timedPlayStep() {
             if (!isGdPlaying || gdPlayStepCounter >= params.gdNumSteps) {
@@ -1213,7 +1264,6 @@
             timedPlayStep();
         }
 
-        // --- Coordinate Mapping & GD Visuals ---
         function mapFuncToWorld(funcX, funcY_for_Z) {
             const currentFunc = getCurrentFunction();
             const xPercent = THREE.MathUtils.inverseLerp(params.functionInputMinX, params.functionInputMaxX, funcX);
@@ -1303,6 +1353,7 @@
                 const nextX_func_preview = startX_func - activeStepSize * grad.x;
                 const nextY_func_preview = startY_func - activeStepSize * grad.y;
 
+
                 const originWorld = mapFuncToWorld(startX_func, startY_func);
                 const targetWorld_preview = mapFuncToWorld(nextX_func_preview, nextY_func_preview);
                 originWorld.y += 0.05;
@@ -1321,6 +1372,7 @@
             }
         }
 
+
         function resetGradientDescent() {
             if (isGdPlaying) {
                 clearTimeout(gdPlayTimeoutId);
@@ -1330,6 +1382,7 @@
             document.getElementById('gdPlayButton').disabled = false;
             document.getElementById('gdNextStepButton').disabled = false;
             document.getElementById('gdResetButton').disabled = false;
+
 
             params.gdCurrentX = params.gdStartX;
             params.gdCurrentY = params.gdStartY;
@@ -1357,7 +1410,7 @@
             updateGradientDescentVisuals();
         }
 
-        // --- UI Setup and Event Handlers ---
+
         function updateFunctionSelection() {
             const selectedFuncKey = document.getElementById('functionSelect').value;
             params.currentFunctionKey = selectedFuncKey;
@@ -1402,6 +1455,7 @@
             document.getElementById('gdStartXValue').textContent = params.gdStartX.toFixed(1);
             document.getElementById('gdStartYValue').textContent = params.gdStartY.toFixed(1);
         }
+
 
         function updateColorbar() {
             const canvas = document.getElementById('colorbarCanvas');
@@ -1505,14 +1559,15 @@
             document.getElementById('showGradientArrows').addEventListener('change', e => { params.showGradientArrows = e.target.checked; updateGradientDescentVisuals(); });
             document.getElementById('showCurrentGradientVector').addEventListener('change', e => { params.showCurrentGradientVector = e.target.checked; updateLiveGradientArrow(); });
 
+
             const optimizerParamChanged = () => { resetGradientDescent(); updateLiveGradientArrow(); };
-            document.getElementById('vanillaGdStepSize').addEventListener('input', e => { params.vanillaGdStepSize = parseFloat(e.target.value); document.getElementById('vanillaGdStepSizeValue').textContent = params.vanillaGdStepSize.toFixed(3); if (params.currentOptimizerKey === 'standard') optimizerParamChanged(); });
+            document.getElementById('vanillaGdStepSize').addEventListener('input', e => { params.vanillaGdStepSize = parseFloat(e.target.value); document.getElementById('vanillaGdStepSizeValue').textContent = params.vanillaGdStepSize.toFixed(4); if (params.currentOptimizerKey === 'standard') optimizerParamChanged(); });
             document.getElementById('momentumBeta').addEventListener('input', e => { params.momentumBeta = parseFloat(e.target.value); document.getElementById('momentumBetaValue').textContent = params.momentumBeta.toFixed(2); if (params.currentOptimizerKey === 'momentum') optimizerParamChanged(); });
-            document.getElementById('momentumStepSize').addEventListener('input', e => { params.momentumStepSize = parseFloat(e.target.value); document.getElementById('momentumStepSizeValue').textContent = params.momentumStepSize.toFixed(3); if (params.currentOptimizerKey === 'momentum') optimizerParamChanged(); });
+            document.getElementById('momentumStepSize').addEventListener('input', e => { params.momentumStepSize = parseFloat(e.target.value); document.getElementById('momentumStepSizeValue').textContent = params.momentumStepSize.toFixed(4); if (params.currentOptimizerKey === 'momentum') optimizerParamChanged(); });
             document.getElementById('adamBeta1').addEventListener('input', e => { params.adamBeta1 = parseFloat(e.target.value); document.getElementById('adamBeta1Value').textContent = params.adamBeta1.toFixed(3); if (params.currentOptimizerKey === 'adam') optimizerParamChanged(); });
             document.getElementById('adamBeta2').addEventListener('input', e => { params.adamBeta2 = parseFloat(e.target.value); document.getElementById('adamBeta2Value').textContent = params.adamBeta2.toFixed(4); if (params.currentOptimizerKey === 'adam') optimizerParamChanged(); });
             document.getElementById('adamEpsilon').addEventListener('input', e => { params.adamEpsilon = parseFloat(e.target.value); document.getElementById('adamEpsilonValue').textContent = params.adamEpsilon.toExponential(1); if (params.currentOptimizerKey === 'adam') optimizerParamChanged(); });
-            document.getElementById('adamStepSize').addEventListener('input', e => { params.adamStepSize = parseFloat(e.target.value); document.getElementById('adamStepSizeValue').textContent = params.adamStepSize.toFixed(3); if (params.currentOptimizerKey === 'adam') optimizerParamChanged(); });
+            document.getElementById('adamStepSize').addEventListener('input', e => { params.adamStepSize = parseFloat(e.target.value); document.getElementById('adamStepSizeValue').textContent = params.adamStepSize.toFixed(4); if (params.currentOptimizerKey === 'adam') optimizerParamChanged(); });
 
             document.getElementById('gdPlayButton').addEventListener('click', startTimedPlay);
             document.getElementById('gdNextStepButton').addEventListener('click', executeActiveOptimizerStep);
@@ -1524,7 +1579,8 @@
                 if (valueDisplay) {
                     if (typeof params[key] === 'number') {
                         if (key === 'adamEpsilon') valueDisplay.textContent = params[key].toExponential(1);
-                        else if (key.includes('StepSize') || key === 'adamBeta1') valueDisplay.textContent = params[key].toFixed(3);
+                        else if (key.includes('StepSize')) valueDisplay.textContent = params[key].toFixed(4); // Changed this line
+                        else if (key === 'adamBeta1') valueDisplay.textContent = params[key].toFixed(3);
                         else if (key === 'adamBeta2') valueDisplay.textContent = params[key].toFixed(4);
                         else if (key === 'surfaceAlpha' || key === 'momentumBeta') valueDisplay.textContent = params[key].toFixed(2);
                         else valueDisplay.textContent = params[key].toFixed(1);
@@ -1539,7 +1595,6 @@
             document.getElementById('gdNumStepsValue').textContent = params.gdNumSteps;
         }
 
-        // --- Main Regeneration Function ---
         function regenerateTerrainAndGD() {
             if (terrainMesh) {
                 scene.remove(terrainMesh);
@@ -1572,7 +1627,6 @@
             updateColorbar();
         }
 
-        // --- Mobile Controls State ---
         function checkMobileControlsState() {
             const isMobile = window.innerWidth <= 768;
             const controlsPanel = document.getElementById('controls');
@@ -1587,11 +1641,10 @@
                 controlsPanel.style.width = '';
                 controlsPanel.style.height = '';
                 controlsPanel.style.maxHeight = '';
-                // Set initial arrow direction based on panel state
                 if (controlsPanel.classList.contains('open')) {
-                    menuButton.innerHTML = '&#x25C0;'; // Left arrow
+                    menuButton.innerHTML = '&#x25C0;';
                 } else {
-                    menuButton.innerHTML = '&#x25B6;'; // Right arrow
+                    menuButton.innerHTML = '&#x25B6;';
                 }
             } else {
                 menuButtonContainer.style.display = 'none';
@@ -1600,13 +1653,13 @@
                 controlsPanel.style.left = '10px';
                 controlsPanel.style.top = '10px';
                 controlsPanel.style.width = '320px';
-                controlsPanel.style.height = 'calc(100vh - 100px)';
                 controlsPanel.style.maxHeight = 'calc(100vh - 100px)';
-                controlsPanel.style.paddingTop = ''; // Remove mobile padding-top
+                controlsPanel.style.height = '';
+                controlsPanel.style.paddingTop = '';
             }
         }
 
-        // --- Window Resize ---
+
         function onWindowResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
@@ -1614,7 +1667,6 @@
             checkMobileControlsState();
         }
 
-        // --- Animation Loop ---
         function animate() {
             requestAnimationFrame(animate);
             controls.update();
