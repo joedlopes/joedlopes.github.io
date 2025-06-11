@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Differential Evolution Visualization | 3D Function Optimization</title>
+    <meta name="description"
+        content="Explore and learn about the Differential Evolution (DE) algorithm interactively with this 3D visualization tool. See the population evolve on various mathematical functions like Himmelblau, Rastrigin, and Rosenbrock.">
+    <meta name="keywords"
+        content="differential evolution, optimization, 3D visualization, interactive tutorial, evolutionary algorithm, metaheuristic, mathematical functions, Himmelblau, Rastrigin, Paraboloid, Rosenbrock, Ackley, Six-hump camel, learning tool, data science education">
+
+    <style>
+        /* Basic styling for the page and controls */
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        canvas#threeCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        #controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(30, 30, 30, 0.93);
+            padding: 10px;
+            border-radius: 8px;
+            color: #e0e0e0;
+            max-height: calc(100vh - 100px);
+            width: 320px;
+            overflow-y: auto;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+            font-size: 13px;
+            transition: left 0.3s ease-in-out;
+        }
+
+        #controls h4 {
+            margin-top: 5px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 6px;
+            font-size: 15px;
+            color: #00aaff;
+        }
+
+        #controls label,
+        #controls input,
+        #controls button,
+        #controls select,
+        #controls .info-text {
+            margin-bottom: 8px;
+            display: block;
+            font-size: 13px;
+        }
+
+        #controls input[type="number"],
+        #controls input[type="range"],
+        #controls select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 6px;
+            border-radius: 3px;
+            border: 1px solid #444;
+            background-color: #2a2a2a;
+            color: #e0e0e0;
+        }
+
+        #controls input[type="number"] {
+            padding: 7px;
+        }
+
+        #controls .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        #controls .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin: 0 6px 0 0;
+            padding: 0;
+            flex-shrink: 0;
+        }
+
+        #controls .checkbox-group label {
+            margin-bottom: 0;
+            width: auto;
+            flex-grow: 1;
+        }
+
+        #controls button {
+            padding: 7px 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease;
+            font-weight: bold;
+            margin-right: 5px;
+            display: inline-block;
+        }
+
+        #controls button:hover {
+            background-color: #0056b3;
+            transform: translateY(-1px);
+        }
+
+        #controls button:active {
+            transform: translateY(0px);
+        }
+
+        #controls button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+
+        #controls .param-value,
+        #controls .info-value {
+            font-weight: bold;
+            color: #87CEFA;
+            margin-left: 5px;
+        }
+
+        #controls .de-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+            background-color: #252525;
+            padding: 8px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        #controls .de-info-item {
+            font-size: 12px;
+        }
+
+        #controls .button-group {
+            margin-top: 10px;
+            margin-bottom: 12px;
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        #controls .button-group button {
+            flex-grow: 1;
+        }
+
+        #mutationLegend {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #252525;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        #mutationEquation {
+            margin-bottom: 8px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .legend-color-box {
+            width: 12px;
+            height: 12px;
+            margin-right: 8px;
+            border: 1px solid #555;
+        }
+
+        .tab-buttons {
+            overflow: hidden;
+            border-bottom: 1px solid #444;
+            margin-bottom: 10px;
+        }
+
+        .tab-buttons button {
+            background-color: inherit;
+            float: left;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 8px 10px;
+            transition: 0.3s;
+            font-size: 13px;
+            color: #ccc;
+            border-radius: 4px 4px 0 0;
+            margin-right: 2px;
+        }
+
+        .tab-buttons button:hover {
+            background-color: #444;
+            color: #fff;
+        }
+
+        .tab-buttons button.active {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 6px 0;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            height: 8px;
+            background: #555;
+            border-radius: 4px;
+        }
+
+        input[type=range]::-moz-range-track {
+            height: 8px;
+            background: #555;
+            border-radius: 4px;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            margin-top: -4px;
+            background-color: #007bff;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+        }
+
+        input[type=range]::-moz-range-thumb {
+            background-color: #007bff;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            border: none;
+        }
+
+        #functionInfo {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(30, 30, 30, 0.85);
+            color: #f0f0f0;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            text-align: center;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            min-width: 300px;
+        }
+
+        #functionInfo p {
+            margin: 2px 0;
+        }
+
+        #functionInfo .name {
+            font-weight: bold;
+            color: #00aaff;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        #colorbarContainer {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(30, 30, 30, 0.85);
+            padding: 5px;
+            border-radius: 5px;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            color: #f0f0f0;
+            font-size: 12px;
+        }
+
+        #colorbarCanvas {
+            width: 256px;
+            height: 20px;
+            border: 1px solid #555;
+            margin: 0 10px;
+        }
+
+        #colorbarMin,
+        #colorbarMax {
+            min-width: 40px;
+            text-align: center;
+        }
+
+        #copyrightInfo {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            font-size: 12px;
+            color: #aaa;
+            z-index: 5;
+            background: rgba(30, 30, 30, 0.7);
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
+        #copyrightInfo a {
+            color: #00aaff;
+            text-decoration: none;
+        }
+
+        #copyrightInfo a:hover {
+            text-decoration: underline;
+        }
+
+        #menuButtonContainer {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 101;
+            display: none;
+        }
+
+        #menuButton {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            font-size: 18px;
+            line-height: 1;
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            width: 40px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            #controls {
+                position: fixed;
+                left: -350px;
+                top: 0;
+                width: 300px;
+                height: 100%;
+                max-height: 100vh;
+                z-index: 100;
+                box-sizing: border-box;
+            }
+
+            #controls.open {
+                left: 0;
+                padding-top: 60px;
+            }
+
+            #menuButtonContainer {
+                display: block !important;
+            }
+
+            #functionInfo {
+                font-size: 11px;
+                padding: 4px 8px;
+                min-width: auto;
+                max-width: calc(100vw - 20px);
+            }
+
+            #functionInfo .name {
+                font-size: 13px;
+            }
+
+            #colorbarContainer {
+                font-size: 10px;
+                padding: 3px;
+                bottom: 5px;
+            }
+
+            #colorbarCanvas {
+                width: 150px;
+                height: 15px;
+            }
+
+            #colorbarMin,
+            #colorbarMax {
+                min-width: 25px;
+                font-size: 9px;
+            }
+
+            #copyrightInfo {
+                font-size: 10px;
+                padding: 2px 5px;
+                bottom: 5px;
+                right: 5px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="menuButtonContainer">
+        <button id="menuButton">&#x25B6;</button>
+    </div>
+
+    <div id="functionInfo">
+        <p class="name" id="functionNameDisplay">Himmelblau Function</p>
+        <p id="functionFormulaDisplay">$f(x, y) = (x^2 + y - 11)^2 + (x + y^2 - 7)^2$</p>
+    </div>
+
+    <div id="controls">
+        <div class="tab-buttons">
+            <button class="tab-button active" onclick="openTab(event, 'terrainTab')">Function</button>
+            <button class="tab-button" onclick="openTab(event, 'deTab')">Differential Evolution</button>
+        </div>
+
+        <div id="terrainTab" class="tab-content active">
+            <h4>Function Settings</h4>
+            <div>
+                <label for="functionSelect">Select Function:</label>
+                <select id="functionSelect"></select>
+            </div>
+            <div>
+                <label for="colormapSelect">Select Colormap:</label>
+                <select id="colormapSelect"></select>
+            </div>
+            <div>
+                <label for="heightScale">Height Scale: <span id="heightScaleValue"
+                        class="param-value">3.0</span></label>
+                <input type="range" id="heightScale" min="0.1" max="20" step="0.1" value="3">
+            </div>
+            <div>
+                <label for="terrainSize">Function Plot Range (X & Z): <span id="terrainSizeValue"
+                        class="param-value">20.0</span></label>
+                <input type="range" id="terrainSize" min="5" max="40" step="1" value="20">
+            </div>
+            <div>
+                <label for="surfaceAlpha">Surface Alpha: <span id="surfaceAlphaValue"
+                        class="param-value">1.0</span></label>
+                <input type="range" id="surfaceAlpha" min="0.0" max="1.0" step="0.01" value="1.0">
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="showContourLines" checked>
+                <label for="showContourLines">Show Contour Lines</label>
+            </div>
+            <div>
+                <label for="numContourLines">Num Contour Lines: <span id="numContourLinesValue"
+                        class="param-value">20</span></label>
+                <input type="range" id="numContourLines" min="2" max="50" step="1" value="20">
+            </div>
+            <button id="regenerateTerrainButton">Regenerate Function Plot</button>
+        </div>
+
+        <div id="deTab" class="tab-content">
+            <h4>DE Parameters</h4>
+            <div>
+                <label for="deNP">Population Size (NP): <span id="deNPValue" class="param-value">20</span></label>
+                <input type="range" id="deNP" min="10" max="100" step="1" value="20">
+            </div>
+            <div>
+                <label for="deF">Mutation Factor (F): <span id="deFValue" class="param-value">0.8</span></label>
+                <input type="range" id="deF" min="0.1" max="2.0" step="0.01" value="0.8">
+            </div>
+            <div>
+                <label for="deCR">Crossover Rate (CR): <span id="deCRValue" class="param-value">0.9</span></label>
+                <input type="range" id="deCR" min="0.0" max="1.0" step="0.01" value="0.9">
+            </div>
+            <div>
+                <label for="deStrategy">Mutation Strategy:</label>
+                <select id="deStrategy">
+                    <option value="rand/1">rand/1</option>
+                    <option value="best/1">best/1</option>
+                    <option value="rand/2">rand/2</option>
+                    <option value="best/2">best/2</option>
+                </select>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="visualizeSingle">
+                <label for="visualizeSingle">Visualize Single Evolution</label>
+            </div>
+
+            <div id="mutationLegend"></div>
+
+            <hr style="border-color: #444; margin: 15px 0;">
+            <h4>Controls</h4>
+            <div class="button-group">
+                <button id="deNextGenButton" title="Run one generation of the DE process.">Next Generation</button>
+                <button id="deNextIndButton" title="Visualize the next individual's evolution."
+                    style="display:none;">Next Individual</button>
+                <button id="deResetButton" title="Reset DE to a new random population.">Reset</button>
+            </div>
+
+            <div class="de-info-grid">
+                <div class="de-info-item">Generation: <span id="deGenerationValue" class="info-value">0</span></div>
+                <div class="de-info-item">Best Fitness: <span id="deBestFitnessValue" class="info-value">N/A</span>
+                </div>
+                <div class="de-info-item" id="singleStepInfo" style="display:none;">Individual: <span
+                        id="deIndividualValue" class="info-value">0/20</span></div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div id="colorbarContainer"> <span id="colorbarMin">Min f(x,y)</span>
+        <canvas id="colorbarCanvas"></canvas>
+        <span id="colorbarMax">Max f(x,y)</span>
+    </div>
+    <canvas id="threeCanvas"></canvas>
+
+    <div id="copyrightInfo">
+        <p>&copy; <a href="https://joedlopes.github.io" target="_blank" rel="noopener noreferrer author">Joed</a> - DE
+            Visualizer</p>
+    </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // --- Global Variables ---
+        let scene, camera, renderer, controls;
+        let terrainMesh;
+        let contourLinesGroup = new THREE.Group();
+        let populationData = [];
+        let populationSpheres = new THREE.Group();
+        let evolutionVisuals = new THREE.Group();
+
+        let generationCount = 0;
+        let bestFitness = Infinity;
+
+        // --- Single Visualization State ---
+        let singleVisIndex = 0;
+        let nextGenerationResults = [];
+
+        // --- Configuration Parameters ---
+        const params = {
+            currentFunctionKey: 'himmelblau',
+            currentColormapKey: 'jet',
+            resolution: 200,
+            heightScale: 3,
+            terrainSize: 20,
+            surfaceAlpha: 1.0,
+            functionInputMinX: -5,
+            functionInputMaxX: 5,
+            functionInputMinY: -5,
+            functionInputMaxY: 5,
+            terrainMinHeight: 0,
+            terrainHeightRange: 1,
+            worldMinY: 0,
+            worldMaxY: 0,
+            showContourLines: true,
+            numContourLines: 20,
+            contourLineColor: 0xcccccc,
+            contourLineWidth: 1,
+
+            // DE Parameters
+            deNP: 20,       // Population size
+            deF: 0.8,       // Mutation factor
+            deCR: 0.9,      // Crossover rate
+            deStrategy: 'rand/1',
+            visualizeSingle: false,
+
+            // Colors
+            popColorChildImproved: new THREE.Color(0x00ff00),   // Green
+            popColorParentSurvived: new THREE.Color(0x00ffff), // Cyan
+            popColorDiscarded: new THREE.Color(0xff0000),      // Red
+            arrowColorSuccess: new THREE.Color(0x00ff00),      // Green
+            lineColorFailure: new THREE.Color(0xffffff),       // White
+            parentHighlightColors: {
+                p_best: new THREE.Color(0x00BFFF), // DeepSkyBlue
+                r_base: new THREE.Color(0xff00ff), // Magenta 
+                r1: new THREE.Color(0xffff00), // Yellow
+                r2: new THREE.Color(0xffa500), // Orange
+                r3: new THREE.Color(0x800080), // Purple
+                r4: new THREE.Color(0x00ced1), // Dark Turquoise
+            }
+        };
+
+        // --- Mathematical Functions & Their Properties ---
+        const functions = {
+            himmelblau: { name: "Himmelblau", formulaTex: "f(x, y) = (x^2 + y - 11)^2 + (x + y^2 - 7)^2", evaluate: (x, y) => ((x * x + y - 11) ** 2) + ((x + y * y - 7) ** 2), domain: { minX: -5, maxX: 5, minY: -5, maxY: 5 } },
+            paraboloid: { name: "Paraboloid", formulaTex: "f(x, y) = x^2 + y^2", evaluate: (x, y) => x * x + y * y, domain: { minX: -3, maxX: 3, minY: -3, maxY: 3 } },
+            rastrigin: { name: "Rastrigin", formulaTex: "f(x,y) = 20 + (x^2 - 10\\cos(2\\pi x)) + (y^2 - 10\\cos(2\\pi y))", evaluate: (x, y) => 20 + (x * x - 10 * Math.cos(2 * Math.PI * x)) + (y * y - 10 * Math.cos(2 * Math.PI * y)), domain: { minX: -5.12, maxX: 5.12, minY: -5.12, maxY: 5.12 } },
+            rosenbrock: { name: "Rosenbrock", formulaTex: "f(x, y) = (1-x)^2 + 100(y-x^2)^2", evaluate: (x, y) => (1 - x) ** 2 + 100 * (y - x * x) ** 2, domain: { minX: -2, maxX: 2, minY: -1, maxY: 3 } },
+            ackley: { name: "Ackley", formulaTex: "f(x,y) = -20e^{-0.2\\sqrt{0.5(x^2+y^2)}} - e^{0.5(\\cos(2\\pi x) + \\cos(2\\pi y))} + 20 + e", evaluate: (x, y) => -20 * Math.exp(-0.2 * Math.sqrt(0.5 * (x * x + y * y))) - Math.exp(0.5 * (Math.cos(2 * Math.PI * x) + Math.cos(2 * Math.PI * y))) + 20 + Math.E, domain: { minX: -5, maxX: 5, minY: -5, maxY: 5 } },
+            sixHumpCamel: { name: "Six-hump Camel", formulaTex: "f(x,y) = (4 - 2.1x^2 + \\frac{x^4}{3})x^2 + xy + (-4 + 4y^2)y^2", evaluate: (x, y) => (4 - 2.1 * x * x + x ** 4 / 3) * x * x + x * y + (-4 + 4 * y * y) * y * y, domain: { minX: -2.5, maxX: 2.5, minY: -1.5, maxY: 1.5 } }
+        };
+
+        // --- Colormaps for Visualization ---
+        const colormaps = {
+            jet: { name: "Jet", evaluate: value => new THREE.Color().lerpColors(new THREE.Color(0, 0, 1), new THREE.Color(1, 0, 0), value) },
+            rainbow: { name: "Rainbow", evaluate: value => new THREE.Color().setHSL(value, 1.0, 0.5) },
+            hot: {
+                name: "Hot", evaluate: value => {
+                    const c = new THREE.Color(1, 1, 1);
+                    c.r = Math.min(1, value / 0.6);
+                    c.g = value > 0.6 ? (value - 0.6) / 0.4 : 0;
+                    c.b = value > 0.8 ? (value - 0.8) / 0.2 : 0;
+                    return c;
+                }
+            },
+        };
+
+        // --- Initialization and Main Loop ---
+        init();
+        animate();
+
+        window.openTab = function (evt, tabName) {
+            document.querySelectorAll(".tab-content").forEach(tc => tc.classList.remove("active"));
+            document.querySelectorAll(".tab-button").forEach(tb => tb.classList.remove("active"));
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x282c34);
+            scene.fog = new THREE.Fog(scene.background, params.terrainSize * 2, params.terrainSize * 5);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(params.terrainSize * 0.75, params.terrainSize * 0.75, params.terrainSize * 0.75);
+
+            renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('threeCanvas'), antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.maxPolarAngle = Math.PI / 2 - 0.01;
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+            scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+            directionalLight.position.set(params.terrainSize, params.terrainSize * 1.5, params.terrainSize * 0.5);
+            scene.add(directionalLight);
+
+            scene.add(contourLinesGroup);
+            scene.add(populationSpheres);
+            scene.add(evolutionVisuals);
+
+            setupUI();
+            updateFunctionSelection();
+            regenerateTerrain();
+            resetDE();
+
+            const menuButton = document.getElementById('menuButton');
+            const controlsPanel = document.getElementById('controls');
+            menuButton.addEventListener('click', (event) => {
+                event.stopPropagation();
+                controlsPanel.classList.toggle('open');
+                menuButton.innerHTML = controlsPanel.classList.contains('open') ? '&#x25C0;' : '&#x25B6;';
+            });
+            document.addEventListener('click', (event) => {
+                if (window.innerWidth <= 768 && controlsPanel.classList.contains('open') && !controlsPanel.contains(event.target)) {
+                    controlsPanel.classList.remove('open');
+                    menuButton.innerHTML = '&#x25B6;';
+                }
+            });
+
+            window.addEventListener('resize', onWindowResize);
+            checkMobileControlsState();
+        }
+
+        function getCurrentFunction() { return functions[params.currentFunctionKey]; }
+        function getCurrentColormap() { return colormaps[params.currentColormapKey]; }
+
+        function createTerrainGeometry() {
+            const currentFunc = getCurrentFunction();
+            const currentColormapEval = getCurrentColormap().evaluate;
+            const vertsPerSide = params.resolution;
+            const positions = new Float32Array(vertsPerSide * vertsPerSide * 3);
+            const colors = new Float32Array(vertsPerSide * vertsPerSide * 3);
+            const rawHeights = [];
+
+            let minH_func = Infinity, maxH_func = -Infinity;
+            const step = 1.0 / (vertsPerSide - 1);
+
+            for (let z_idx = 0; z_idx < vertsPerSide; z_idx++) {
+                for (let x_idx = 0; x_idx < vertsPerSide; x_idx++) {
+                    const idx = z_idx * vertsPerSide + x_idx;
+                    const funcX = THREE.MathUtils.lerp(params.functionInputMinX, params.functionInputMaxX, x_idx * step);
+                    const funcY_for_Z = THREE.MathUtils.lerp(params.functionInputMinY, params.functionInputMaxY, z_idx * step);
+                    const currentRawHeight = currentFunc.evaluate(funcX, funcY_for_Z);
+                    rawHeights.push(currentRawHeight);
+                    minH_func = Math.min(minH_func, currentRawHeight);
+                    maxH_func = Math.max(maxH_func, currentRawHeight);
+                    positions[idx * 3] = x_idx * step * params.terrainSize - params.terrainSize / 2;
+                    positions[idx * 3 + 2] = z_idx * step * params.terrainSize - params.terrainSize / 2;
+                }
+            }
+
+            params.terrainMinHeight = minH_func;
+            params.terrainHeightRange = (maxH_func - minH_func) || 1;
+            params.worldMinY = Infinity;
+            params.worldMaxY = -Infinity;
+
+            for (let i = 0; i < vertsPerSide * vertsPerSide; i++) {
+                const normalizedHeight = (rawHeights[i] - params.terrainMinHeight) / params.terrainHeightRange;
+                const worldY = normalizedHeight * params.heightScale;
+                positions[i * 3 + 1] = worldY;
+                params.worldMinY = Math.min(params.worldMinY, worldY);
+                params.worldMaxY = Math.max(params.worldMaxY, worldY);
+                const finalColor = currentColormapEval(normalizedHeight);
+                colors[i * 3] = finalColor.r;
+                colors[i * 3 + 1] = finalColor.g;
+                colors[i * 3 + 2] = finalColor.b;
+            }
+
+            const indices = [];
+            for (let z = 0; z < vertsPerSide - 1; z++) {
+                for (let x = 0; x < vertsPerSide - 1; x++) {
+                    const a = z * vertsPerSide + x;
+                    const b = a + 1;
+                    const c = (z + 1) * vertsPerSide + x;
+                    const d = c + 1;
+                    indices.push(a, c, b, b, c, d);
+                }
+            }
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geometry.setIndex(indices);
+            geometry.computeVertexNormals();
+            return geometry;
+        }
+
+        function createTerrainMesh(geometry) {
+            const material = new THREE.MeshStandardMaterial({
+                side: THREE.DoubleSide,
+                vertexColors: true,
+                metalness: 0.1,
+                roughness: 0.9,
+                opacity: params.surfaceAlpha,
+                transparent: params.surfaceAlpha < 1.0
+            });
+            return new THREE.Mesh(geometry, material);
+        }
+
+        // --- Differential Evolution Logic ---
+
+        function mapFuncToWorld(funcX, funcY) {
+            const currentFunc = getCurrentFunction();
+            const xPercent = THREE.MathUtils.inverseLerp(params.functionInputMinX, params.functionInputMaxX, funcX);
+            const zPercent = THREE.MathUtils.inverseLerp(params.functionInputMinY, params.functionInputMaxY, funcY);
+            const worldX = xPercent * params.terrainSize - params.terrainSize / 2;
+            const worldZ = zPercent * params.terrainSize - params.terrainSize / 2;
+
+            const rawHeight = currentFunc.evaluate(funcX, funcY);
+            let worldY = ((rawHeight - params.terrainMinHeight) / params.terrainHeightRange) * params.heightScale;
+            worldY = THREE.MathUtils.clamp(worldY, params.worldMinY, params.worldMaxY);
+            return new THREE.Vector3(worldX, worldY, worldZ);
+        }
+
+        function clearGroup(group) {
+            while (group.children.length > 0) {
+                const object = group.children[0];
+                group.remove(object);
+                if (object.geometry) object.geometry.dispose();
+                if (object.material) {
+                    // Check if material is an array (for ArrowHelper)
+                    if (Array.isArray(object.material)) {
+                        object.material.forEach(m => m.dispose());
+                    } else {
+                        object.material.dispose();
+                    }
+                }
+                if (object.line) { // ArrowHelper specific cleanup
+                    object.line.geometry.dispose();
+                    object.line.material.dispose();
+                }
+                if (object.cone) {
+                    object.cone.geometry.dispose();
+                    object.cone.material.dispose();
+                }
+            }
+        }
+
+        function resetDE() {
+            clearGroup(populationSpheres);
+            clearGroup(evolutionVisuals);
+            populationData = [];
+            singleVisIndex = 0;
+            nextGenerationResults = [];
+
+            generationCount = 0;
+            bestFitness = Infinity;
+
+            // Create initial population
+            const currentFunc = getCurrentFunction();
+            for (let i = 0; i < params.deNP; i++) {
+                const x = THREE.MathUtils.randFloat(params.functionInputMinX, params.functionInputMaxX);
+                const y = THREE.MathUtils.randFloat(params.functionInputMinY, params.functionInputMaxY);
+                const fitness = currentFunc.evaluate(x, y);
+
+                populationData.push({ x, y, fitness });
+
+                const geometry = new THREE.SphereGeometry(0.15, 16, 16);
+                const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                const sphere = new THREE.Mesh(geometry, material);
+                sphere.position.copy(mapFuncToWorld(x, y)).y += 0.05;
+                populationSpheres.add(sphere);
+
+                if (fitness < bestFitness) bestFitness = fitness;
+            }
+            updateDeInfo();
+        }
+
+        function calculateNextGeneration() {
+            const oldPopulationData = [...populationData];
+            const results = [];
+            const currentFunc = getCurrentFunction();
+            const sortedPopulation = [...oldPopulationData].sort((a, b) => a.fitness - b.fitness);
+
+            for (let i = 0; i < params.deNP; i++) {
+                const target = oldPopulationData[i];
+                const getIndices = (num, max, exclude = []) => {
+                    const indices = [];
+                    while (indices.length < num) {
+                        const idx = Math.floor(Math.random() * max);
+                        if (!indices.includes(idx) && !exclude.includes(idx)) {
+                            indices.push(idx);
+                        }
+                    }
+                    return indices;
+                };
+
+                const requiredParents = params.deStrategy.includes('/2') ? 5 : 3;
+                let p_indices;
+                if (params.deStrategy.startsWith('best')) {
+                    const best_idx = oldPopulationData.indexOf(sortedPopulation[0]);
+                    p_indices = [best_idx, ...getIndices(requiredParents, params.deNP, [i, best_idx])];
+                } else {
+                    p_indices = [...getIndices(requiredParents + 1, params.deNP, [i])];
+                }
+                const parents = p_indices.map(idx => oldPopulationData[idx]);
+
+                const baseParent = parents[0];
+                const p_vecs = parents.map(p => new THREE.Vector2(p.x, p.y));
+                const diffVec1 = new THREE.Vector2().subVectors(p_vecs[1], p_vecs[2]);
+                let totalDiff = diffVec1;
+                if (params.deStrategy.includes('/2')) {
+                    const diffVec2 = new THREE.Vector2().subVectors(p_vecs[3], p_vecs[4]);
+                    totalDiff.add(diffVec2);
+                }
+                totalDiff.multiplyScalar(params.deF);
+                let mutant = new THREE.Vector2(baseParent.x, baseParent.y).add(totalDiff);
+
+                const trial = { x: 0, y: 0 };
+                const j_rand = Math.floor(Math.random() * 2);
+                trial.x = (Math.random() < params.deCR || j_rand === 0) ? mutant.x : target.x;
+                trial.y = (Math.random() < params.deCR || j_rand === 1) ? mutant.y : target.y;
+                trial.x = THREE.MathUtils.clamp(trial.x, params.functionInputMinX, params.functionInputMaxX);
+                trial.y = THREE.MathUtils.clamp(trial.y, params.functionInputMinY, params.functionInputMaxY);
+                trial.fitness = currentFunc.evaluate(trial.x, trial.y);
+
+                const result = { improved: trial.fitness < target.fitness };
+                if (result.improved) {
+                    result.survivor = trial;
+                    result.discarded = target;
+                } else {
+                    result.survivor = target;
+                    result.discarded = trial;
+                }
+                result.mutationParents = parents;
+                results.push(result);
+            }
+            return results;
+        }
+
+        function runFullGenerationUpdate(results) {
+            clearGroup(populationSpheres);
+            clearGroup(evolutionVisuals);
+            populationData = [];
+            let newBestFitness = Infinity;
+
+            results.forEach(result => {
+                const { survivor, discarded, improved } = result;
+                const survivorColor = improved ? params.popColorChildImproved : params.popColorParentSurvived;
+                const survivorGeom = new THREE.SphereGeometry(0.15, 16, 16);
+                const survivorMat = new THREE.MeshBasicMaterial({ color: survivorColor });
+                const survivorSphere = new THREE.Mesh(survivorGeom, survivorMat);
+                survivorSphere.position.copy(mapFuncToWorld(survivor.x, survivor.y)).y += 0.05;
+                populationSpheres.add(survivorSphere);
+                populationData.push({ x: survivor.x, y: survivor.y, fitness: survivor.fitness });
+
+                const ghostGeom = new THREE.SphereGeometry(0.1, 12, 12);
+                const ghostMat = new THREE.MeshBasicMaterial({ color: params.popColorDiscarded, transparent: true, opacity: 0.7 });
+                const ghostSphere = new THREE.Mesh(ghostGeom, ghostMat);
+                ghostSphere.position.copy(mapFuncToWorld(discarded.x, discarded.y)).y += 0.05;
+                evolutionVisuals.add(ghostSphere);
+
+                if (improved) {
+                    const startPos = ghostSphere.position;
+                    const endPos = survivorSphere.position;
+                    const direction = new THREE.Vector3().subVectors(endPos, startPos);
+                    const length = direction.length();
+                    if (length > 0.01) {
+                        const arrowHelper = new THREE.ArrowHelper(direction.normalize(), startPos, length, params.arrowColorSuccess, length * 0.2, length * 0.1);
+                        evolutionVisuals.add(arrowHelper);
+                    }
+                } else {
+                    const startPos = survivorSphere.position;
+                    const endPos = ghostSphere.position;
+                    const linePoints = [startPos, endPos];
+                    const lineGeom = new THREE.BufferGeometry().setFromPoints(linePoints);
+                    const lineMat = new THREE.LineBasicMaterial({ color: params.lineColorFailure, transparent: true, opacity: 0.6 });
+                    const evolutionLine = new THREE.Line(lineGeom, lineMat);
+                    evolutionVisuals.add(evolutionLine);
+                }
+
+                if (survivor.fitness < newBestFitness) {
+                    newBestFitness = survivor.fitness;
+                }
+            });
+            bestFitness = newBestFitness;
+            generationCount++;
+            updateDeInfo();
+        }
+
+        function runSingleIndividualUpdate() {
+            if (singleVisIndex === 0) {
+                nextGenerationResults = calculateNextGeneration();
+            }
+
+            clearGroup(evolutionVisuals);
+            clearGroup(populationSpheres);
+
+            // Rebuild the population view based on the current step
+            for (let i = 0; i < params.deNP; i++) {
+                let ind, color;
+                if (i < singleVisIndex) {
+                    const pastResult = nextGenerationResults[i];
+                    ind = pastResult.survivor;
+                    color = pastResult.improved ? params.popColorChildImproved : params.popColorParentSurvived;
+                } else {
+                    ind = populationData[i];
+                    color = 0xffffff;
+                }
+                const geom = new THREE.SphereGeometry(0.15, 16, 16);
+                const mat = new THREE.MeshBasicMaterial({ color });
+                const sphere = new THREE.Mesh(geom, mat);
+                sphere.position.copy(mapFuncToWorld(ind.x, ind.y)).y += 0.05;
+                populationSpheres.add(sphere);
+            }
+
+            // Now, show the details for the CURRENT step
+            const result = nextGenerationResults[singleVisIndex];
+            const { survivor, discarded, improved, mutationParents } = result;
+
+            // Highlight mutation parents
+            if (mutationParents) {
+                const parentKeys = params.deStrategy.startsWith('best')
+                    ? ['p_best', 'r1', 'r2', 'r3', 'r4']
+                    : ['r_base', 'r1', 'r2', 'r3', 'r4'];
+                mutationParents.forEach((p, pIndex) => {
+                    const pKey = parentKeys[pIndex];
+                    const pGeom = new THREE.SphereGeometry(0.1, 12, 12);
+                    const pMat = new THREE.MeshBasicMaterial({ color: params.parentHighlightColors[pKey] });
+                    const pSphere = new THREE.Mesh(pGeom, pMat);
+                    pSphere.position.copy(mapFuncToWorld(p.x, p.y)).y += 0.05;
+                    evolutionVisuals.add(pSphere);
+                });
+            }
+
+            // Show discarded individual
+            const ghostGeom = new THREE.SphereGeometry(0.1, 12, 12);
+            const ghostMat = new THREE.MeshBasicMaterial({ color: params.popColorDiscarded, transparent: true, opacity: 0.7 });
+            const ghostSphere = new THREE.Mesh(ghostGeom, ghostMat);
+            ghostSphere.position.copy(mapFuncToWorld(discarded.x, discarded.y)).y += 0.05;
+            evolutionVisuals.add(ghostSphere);
+
+            // Show the outcome of the current step as a temp overlay
+            const survivorColor = improved ? params.popColorChildImproved : params.popColorParentSurvived;
+            const survivorGeom = new THREE.SphereGeometry(0.15, 16, 16);
+            const survivorMat = new THREE.MeshBasicMaterial({ color: survivorColor });
+            const survivorSphere = new THREE.Mesh(survivorGeom, survivorMat);
+            survivorSphere.position.copy(mapFuncToWorld(survivor.x, survivor.y)).y += 0.05;
+            evolutionVisuals.add(survivorSphere);
+
+            // Add connecting line/arrow
+            if (improved) {
+                const startPos = ghostSphere.position;
+                const endPos = survivorSphere.position;
+                const direction = new THREE.Vector3().subVectors(endPos, startPos);
+                const length = direction.length();
+                if (length > 0.01) {
+                    const arrowHelper = new THREE.ArrowHelper(direction.normalize(), startPos, length, params.arrowColorSuccess, length * 0.2, length * 0.1);
+                    evolutionVisuals.add(arrowHelper);
+                }
+            } else {
+                const startPos = survivorSphere.position;
+                const endPos = ghostSphere.position;
+                const linePoints = [startPos, endPos];
+                const lineGeom = new THREE.BufferGeometry().setFromPoints(linePoints);
+                const lineMat = new THREE.LineBasicMaterial({ color: params.lineColorFailure, transparent: true, opacity: 0.6 });
+                const evolutionLine = new THREE.Line(lineGeom, lineMat);
+                evolutionVisuals.add(evolutionLine);
+            }
+
+            singleVisIndex++;
+            updateDeInfo();
+
+            if (singleVisIndex >= params.deNP) {
+                document.getElementById('deNextIndButton').textContent = "Finish Generation";
+            }
+        }
+
+        function finalizeSingleVisGeneration() {
+            runFullGenerationUpdate(nextGenerationResults);
+            singleVisIndex = 0;
+            nextGenerationResults = [];
+            document.getElementById('deNextIndButton').textContent = "Next Individual";
+        }
+
+        function updateDeInfo() {
+            document.getElementById('deGenerationValue').textContent = generationCount;
+            document.getElementById('deBestFitnessValue').textContent = bestFitness.toExponential(4);
+            if (params.visualizeSingle) {
+                document.getElementById('deIndividualValue').textContent = `${singleVisIndex}/${params.deNP}`;
+            }
+        }
+
+        function updateMutationLegend() {
+            const legendDiv = document.getElementById('mutationLegend');
+            const strategy = params.deStrategy;
+            let equation = '';
+            let legendItems = [];
+
+            const createLegendItem = (color, label) => `
+                <div class="legend-item">
+                    <div class="legend-color-box" style="background-color: #${color.getHexString()}"></div>
+                    <span>${label}</span>
+                </div>`;
+
+            switch (strategy) {
+                case 'rand/1':
+                    equation = 'v = r_{base} + F \\cdot (r_1 - r_2)';
+                    legendItems.push(createLegendItem(params.parentHighlightColors.r_base, 'Base Vector (r_base)'));
+                    legendItems.push(createLegendItem(params.parentHighlightColors.r1, 'Random Vector (r1)'));
+                    legendItems.push(createLegendItem(params.parentHighlightColors.r2, 'Random Vector (r2)'));
+                    break;
+                case 'best/1':
+                    equation = 'v = p_{best} + F \\cdot (r_1 - r_2)';
+                    legendItems.push(createLegendItem(params.parentHighlightColors.p_best, 'Best Parent (p_best)'));
+                    legendItems.push(createLegendItem(params.parentHighlightColors.r1, 'Random Vector (r1)'));
+                    legendItems.push(createLegendItem(params.parentHighlightColors.r2, 'Random Vector (r2)'));
+                    break;
+                case 'rand/2':
+                    equation = 'v = r_{base} + F \\cdot (r_1 - r_2) + F \\cdot (r_3 - r_4)';
+                    legendItems.push(createLegendItem(params.parentHighlightColors.r_base, 'Base Vector (r_base)'));
+                    legendItems.push(createLegendItem(params.parentHighlightColors.r1, 'Random Vector (r1)'));
+                    legendItems.push(createLegendItem(params.parentHighlightColors.r2, 'Random Vector (r2)'));
+                    legendItems.push(createLegendItem(params.parentHighlightColors.r3, 'Random Vector (r3)'));
+                    legendItems.push(createLegendItem(params.parentHighlightColors.r4, 'Random Vector (r4)'));
+                    break;
+                case 'best/2':
+                    equation = 'v = p_{best} + F \\cdot (r_1 - r_2) + F \\cdot (r_3 - r_4)';
+                    legendItems.push(createLegendItem(params.parentHighlightColors.p_best, 'Best Parent (p_best)'));
+                    legendItems.push(createLegendItem(params.parentHighlightColors.r1, 'Random Vector (r1)'));
+                    legendItems.push(createLegendItem(params.parentHighlightColors.r2, 'Random Vector (r2)'));
+                    legendItems.push(createLegendItem(params.parentHighlightColors.r3, 'Random Vector (r3)'));
+                    legendItems.push(createLegendItem(params.parentHighlightColors.r4, 'Random Vector (r4)'));
+                    break;
+            }
+
+            legendDiv.innerHTML = `<div id="mutationEquation">${equation}</div>${legendItems.join('')}`;
+            if (window.katex) {
+                katex.render(equation, document.getElementById('mutationEquation'), {
+                    throwOnError: false, displayMode: false
+                });
+            }
+        }
+
+        function regenerateTerrain() {
+            if (terrainMesh) {
+                scene.remove(terrainMesh);
+                terrainMesh.geometry.dispose();
+                terrainMesh.material.dispose();
+            }
+            const terrainGeom = createTerrainGeometry();
+            terrainMesh = createTerrainMesh(terrainGeom);
+            scene.add(terrainMesh);
+
+            updateContourLines();
+            updateColorbar();
+        }
+
+        // --- UI Setup and Event Handlers ---
+        function setupUI() {
+            Object.keys(functions).forEach(key => {
+                const option = document.createElement('option');
+                option.value = key; option.textContent = functions[key].name;
+                document.getElementById('functionSelect').appendChild(option);
+            });
+            document.getElementById('functionSelect').addEventListener('change', () => {
+                updateFunctionSelection();
+                regenerateTerrain();
+                resetDE();
+            });
+
+            Object.keys(colormaps).forEach(key => {
+                const option = document.createElement('option');
+                option.value = key; option.textContent = colormaps[key].name;
+                document.getElementById('colormapSelect').appendChild(option);
+            });
+            document.getElementById('colormapSelect').addEventListener('change', (e) => {
+                params.currentColormapKey = e.target.value;
+                regenerateTerrain();
+            });
+
+            const setupRangeInput = (inputId, valueId, paramKey, isFloat = true, fixed = 1) => {
+                const input = document.getElementById(inputId);
+                const valueDisplay = document.getElementById(valueId);
+                input.addEventListener('input', (e) => {
+                    const value = isFloat ? parseFloat(e.target.value) : parseInt(e.target.value);
+                    params[paramKey] = value;
+                    valueDisplay.textContent = value.toFixed(fixed);
+                });
+                // Only reset for parameters that change the population structure, like NP.
+                // F and CR can be changed dynamically.
+                input.addEventListener('change', () => {
+                    if (inputId === 'deNP') {
+                        resetDE();
+                    }
+                });
+            };
+
+            setupRangeInput('heightScale', 'heightScaleValue', 'heightScale');
+            setupRangeInput('terrainSize', 'terrainSizeValue', 'terrainSize', false, 1);
+            setupRangeInput('surfaceAlpha', 'surfaceAlphaValue', 'surfaceAlpha', true, 2);
+            setupRangeInput('numContourLines', 'numContourLinesValue', 'numContourLines', false, 0);
+            setupRangeInput('deNP', 'deNPValue', 'deNP', false, 0);
+            setupRangeInput('deF', 'deFValue', 'deF', true, 2);
+            setupRangeInput('deCR', 'deCRValue', 'deCR', true, 2);
+
+            document.getElementById('deStrategy').addEventListener('change', (e) => {
+                params.deStrategy = e.target.value;
+                updateMutationLegend();
+                resetDE();
+            });
+
+            document.getElementById('visualizeSingle').addEventListener('change', (e) => {
+                params.visualizeSingle = e.target.checked;
+                resetDE(); // Reset to avoid inconsistent states
+                document.getElementById('deNextGenButton').style.display = params.visualizeSingle ? 'none' : 'inline-block';
+                document.getElementById('deNextIndButton').style.display = params.visualizeSingle ? 'inline-block' : 'none';
+                document.getElementById('singleStepInfo').style.display = params.visualizeSingle ? 'block' : 'none';
+                document.getElementById('mutationLegend').style.display = params.visualizeSingle ? 'block' : 'none';
+            });
+
+            document.getElementById('regenerateTerrainButton').addEventListener('click', () => {
+                regenerateTerrain();
+                resetDE();
+            });
+
+            document.getElementById('deResetButton').addEventListener('click', resetDE);
+            document.getElementById('deNextGenButton').addEventListener('click', () => {
+                runFullGenerationUpdate(calculateNextGeneration());
+            });
+            document.getElementById('deNextIndButton').addEventListener('click', () => {
+                if (singleVisIndex >= params.deNP) {
+                    finalizeSingleVisGeneration();
+                } else {
+                    runSingleIndividualUpdate();
+                }
+            });
+
+            // Initial values
+            document.getElementById('heightScaleValue').textContent = params.heightScale.toFixed(1);
+            document.getElementById('terrainSizeValue').textContent = params.terrainSize.toFixed(0);
+            document.getElementById('surfaceAlphaValue').textContent = params.surfaceAlpha.toFixed(2);
+            document.getElementById('numContourLinesValue').textContent = params.numContourLines;
+            document.getElementById('deNPValue').textContent = params.deNP;
+            document.getElementById('deFValue').textContent = params.deF.toFixed(2);
+            document.getElementById('deCRValue').textContent = params.deCR.toFixed(2);
+
+            updateMutationLegend();
+            document.getElementById('mutationLegend').style.display = 'none';
+        }
+
+        function updateFunctionSelection() {
+            params.currentFunctionKey = document.getElementById('functionSelect').value;
+            const currentFunc = getCurrentFunction();
+            params.functionInputMinX = currentFunc.domain.minX;
+            params.functionInputMaxX = currentFunc.domain.maxX;
+            params.functionInputMinY = currentFunc.domain.minY;
+            params.functionInputMaxY = currentFunc.domain.maxY;
+            document.getElementById('functionNameDisplay').textContent = currentFunc.name;
+            if (window.katex) {
+                katex.render(currentFunc.formulaTex, document.getElementById('functionFormulaDisplay'), { throwOnError: false, displayMode: false });
+            } else {
+                document.getElementById('functionFormulaDisplay').textContent = currentFunc.formulaTex;
+            }
+        }
+
+        function updateContourLines() { /* ... function unchanged from original ... */ while (contourLinesGroup.children.length > 0) { const child = contourLinesGroup.children[0]; contourLinesGroup.remove(child); if (child.geometry) child.geometry.dispose(); if (child.material) child.material.dispose(); } if (!params.showContourLines || !terrainMesh || !terrainMesh.geometry || !terrainMesh.geometry.attributes.position) return; const geom = terrainMesh.geometry; const positions = geom.attributes.position.array; const indices = geom.index.array; const worldYRange = params.worldMaxY - params.worldMinY; if (worldYRange < 1e-6) return; const contourStep = worldYRange / (params.numContourLines + 1); for (let i = 1; i <= params.numContourLines; i++) { const height = params.worldMinY + i * contourStep; const segments = []; for (let j = 0; j < indices.length; j += 3) { const p1 = new THREE.Vector3().fromArray(positions, indices[j] * 3); const p2 = new THREE.Vector3().fromArray(positions, indices[j + 1] * 3); const p3 = new THREE.Vector3().fromArray(positions, indices[j + 2] * 3); const points = [p1, p2, p3]; const above = [], below = []; points.forEach(p => (p.y >= height ? above.push(p) : below.push(p))); if (above.length === 0 || below.length === 0) continue; let intersectionPoints = []; if (above.length === 1) { below.forEach(p_b => { const t = (height - p_b.y) / (above[0].y - p_b.y); if (t >= 0 && t <= 1) intersectionPoints.push(new THREE.Vector3().lerpVectors(p_b, above[0], t)); }); } else { above.forEach(p_a => { const t = (height - below[0].y) / (p_a.y - below[0].y); if (t >= 0 && t <= 1) intersectionPoints.push(new THREE.Vector3().lerpVectors(below[0], p_a, t)); }); } if (intersectionPoints.length === 2) { segments.push(intersectionPoints[0].x, intersectionPoints[0].y + 0.01, intersectionPoints[0].z, intersectionPoints[1].x, intersectionPoints[1].y + 0.01, intersectionPoints[1].z); } } if (segments.length > 0) { const lineGeom = new THREE.BufferGeometry(); lineGeom.setAttribute('position', new THREE.Float32BufferAttribute(segments, 3)); const lineMat = new THREE.LineBasicMaterial({ color: params.contourLineColor, linewidth: params.contourLineWidth, transparent: true, opacity: 0.7 }); contourLinesGroup.add(new THREE.LineSegments(lineGeom, lineMat)); } } }
+        function updateColorbar() { /* ... function unchanged from original ... */ const canvas = document.getElementById('colorbarCanvas'); const ctx = canvas.getContext('2d'); const width = canvas.width, height = canvas.height; const colormapEval = getCurrentColormap().evaluate; ctx.clearRect(0, 0, width, height); for (let i = 0; i < width; i++) { const color = colormapEval(i / (width - 1)); ctx.fillStyle = `rgb(${Math.floor(color.r * 255)}, ${Math.floor(color.g * 255)}, ${Math.floor(color.b * 255)})`; ctx.fillRect(i, 0, 1, height); } document.getElementById('colorbarMin').textContent = params.worldMinY.toFixed(1); document.getElementById('colorbarMax').textContent = params.worldMaxY.toFixed(1); }
+        function checkMobileControlsState() { /* ... function unchanged from original ... */ const isMobile = window.innerWidth <= 768; const controlsPanel = document.getElementById('controls'); const menuBtnContainer = document.getElementById('menuButtonContainer'); if (isMobile) { menuBtnContainer.style.display = 'block'; } else { menuBtnContainer.style.display = 'none'; controlsPanel.classList.remove('open'); } }
+        function onWindowResize() { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); checkMobileControlsState(); }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+</body>
+
+</html>

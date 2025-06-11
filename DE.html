@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Differential Evolution: A Presentation</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- KaTeX CSS for LaTeX rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Roboto+Slab:wght@400;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Lato', sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            padding: 0 80px 70px 80px;
+            /* Add padding for side arrows and fixed bottom footer */
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: 'Roboto Slab', serif;
+            font-weight: 700;
+        }
+
+        .presentation-container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 85vh;
+        }
+
+        .slide {
+            display: none;
+            padding: 40px 50px;
+            flex-grow: 1;
+            overflow-y: auto;
+            animation: fadeIn 0.5s;
+        }
+
+        .slide.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide-title {
+            color: #0d6efd;
+            border-bottom: 3px solid #0d6efd;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+
+        .equation {
+            display: block;
+            width: 100%;
+            text-align: center;
+            font-size: 1.5em;
+            margin: 25px 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .equation-label {
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        .navigation-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px 20px;
+            border-top: 1px solid #dee2e6;
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+            /* Ensure it is above other content */
+        }
+
+        .progress-container {
+            width: 70%;
+            height: 8px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+        }
+
+        .progress-bar {
+            background-color: #0d6efd;
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease-in-out;
+        }
+
+        #slideCounter {
+            margin-left: 20px;
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+
+        .nav-arrow {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1000;
+            background-color: rgba(0, 0, 0, 0.4);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+            line-height: 50px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .nav-arrow:hover {
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+
+        .nav-arrow:disabled {
+            background-color: rgba(0, 0, 0, 0.1);
+            cursor: not-allowed;
+        }
+
+        #prevBtn {
+            left: 20px;
+        }
+
+        #nextBtn {
+            right: 20px;
+        }
+
+        .flowchart {
+            max-width: 80%;
+            display: block;
+            margin: 20px auto;
+            border-radius: 10px;
+        }
+
+        ul {
+            list-style-type: '✓ ';
+            padding-left: 20px;
+        }
+
+        li {
+            padding-left: 10px;
+            margin-bottom: 10px;
+        }
+
+        .table td,
+        .table th {
+            vertical-align: middle;
+        }
+    </style>
+</head>
+
+<body>
+
+    <button id="prevBtn" class="nav-arrow">&larr;</button>
+    <button id="nextBtn" class="nav-arrow">&rarr;</button>
+
+    <div class="presentation-container">
+        <!-- Slides Content -->
+        <div id="slides-wrapper">
+            <!-- Slide 1: Title -->
+            <div class="slide active">
+                <h1 class="text-center mt-5">Differential Evolution (DE)</h1>
+                <h3 class="text-center text-muted">A simple yet powerful population-based optimization algorithm.</h3>
+                <div class="text-center mt-5">
+                    <p>Use the arrows on the left and right to navigate.</p>
+                </div>
+            </div>
+
+            <!-- Slide 2: History -->
+            <div class="slide">
+                <h2 class="slide-title">History</h2>
+                <p>Differential Evolution was introduced by <strong>Rainer Storn and Kenneth Price</strong> in 1997.</p>
+                <p>They developed it as a heuristic method for optimizing real-valued functions, particularly for
+                    problems that are non-linear and non-differentiable.</p>
+                <p>Its foundation lies in the idea of using vector differences between population members to perturb and
+                    guide the search for an optimum.</p>
+            </div>
+
+            <!-- Slide 3: Objective -->
+            <div class="slide">
+                <h2 class="slide-title">Objective</h2>
+                <p>The primary goal of Differential Evolution is to find the <strong>global optimum</strong> of a given
+                    function (the objective function).</p>
+                <p>It operates on a population of candidate solutions (called "agents" or "vectors") and iteratively
+                    tries to improve these solutions by applying evolutionary operators: <strong>mutation, crossover,
+                        and selection</strong>.</p>
+                <p>DE is designed to be robust and effective for a wide range of continuous optimization problems.</p>
+            </div>
+
+            <!-- Slide 4: DE Workflow -->
+            <div class="slide">
+                <h2 class="slide-title">DE Algorithm Workflow</h2>
+                <p>The core of DE follows a simple yet effective iterative process:</p>
+                <img src="https://i.imgur.com/rL4nF1w.png" alt="Differential Evolution Flowchart" class="flowchart"
+                    onerror="this.onerror=null;this.src='https://placehold.co/600x800/f0f2f5/333?text=Flowchart+Not+Found';">
+                <p class="text-center mt-2"><strong>1. Initialize -> 2. Mutate -> 3. Crossover -> 4. Select -> 5.
+                        Repeat</strong></p>
+            </div>
+
+            <!-- Slide 5: Problems it Can Solve -->
+            <div class="slide">
+                <h2 class="slide-title">What Problems Can It Solve?</h2>
+                <p>DE is exceptionally versatile and has been applied to numerous domains:</p>
+                <ul>
+                    <li><strong>Function Optimization:</strong> Finding the minimum or maximum of complex mathematical
+                        functions.</li>
+                    <li><strong>Machine Learning:</strong> Training neural networks and tuning hyperparameters.</li>
+                    <li><strong>Engineering Design:</strong> Optimizing designs for structures, circuits, and antennas.
+                    </li>
+                    <li><strong>Financial Modeling:</strong> Portfolio optimization and forecasting.</li>
+                    <li><strong>Data Science:</strong> Feature selection and clustering.</li>
+                </ul>
+            </div>
+
+            <!-- Slide 6: Advantages -->
+            <div class="slide">
+                <h2 class="slide-title">Advantages</h2>
+                <ul>
+                    <li><strong>Simplicity:</strong> The core algorithm is easy to understand and implement (often in
+                        just a few lines of code).</li>
+                    <li><strong>Few Control Parameters:</strong> Typically only requires setting the population size
+                        (NP), crossover rate (CR), and mutation factor (F).</li>
+                    <li><strong>Efficiency:</strong> Often finds a good solution in a relatively small number of
+                        function evaluations.</li>
+                    <li><strong>Robustness:</strong> Performs well on a wide variety of optimization landscapes.</li>
+                </ul>
+            </div>
+
+            <!-- Slide 7: Disadvantages -->
+            <div class="slide">
+                <h2 class="slide-title">Disadvantages</h2>
+                <ul>
+                    <li><strong>Parameter Tuning:</strong> Performance can be sensitive to the choice of NP, CR, and F,
+                        which may require tuning for a specific problem.</li>
+                    <li><strong>Premature Convergence:</strong> Can sometimes get stuck in local optima, especially on
+                        very complex or deceptive problems.</li>
+                    <li><strong>Discrete Variables:</strong> The classic DE is designed for continuous domains and
+                        requires modification to handle discrete or integer variables.</li>
+                </ul>
+            </div>
+
+            <!-- Slide 8: Mutation Intro -->
+            <div class="slide">
+                <h2 class="slide-title">Core Operator: Mutation</h2>
+                <p>Mutation is the key operator in DE for generating new candidate solutions and driving exploration.
+                </p>
+                <p>It creates a "mutant vector" $v_i$ by combining several existing vectors from the population. The
+                    most common mutation strategies involve calculating a scaled difference between two vectors and
+                    adding it to a third.</p>
+                <p>The scaling factor, <strong>F</strong>, controls the amplification of the differential variation.</p>
+            </div>
+
+            <!-- NEW Slide 9: Variable Definitions -->
+            <div class="slide">
+                <h2 class="slide-title">Variable Definitions</h2>
+                <p>This table defines the variables used in the upcoming equations.</p>
+                <table class="table table-bordered table-striped">
+                    <thead class="table-primary">
+                        <tr>
+                            <th>Variable</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>$x_{i,G}$</td>
+                            <td>The target vector (individual $i$) from the current generation $G$.</td>
+                        </tr>
+                        <tr>
+                            <td>$v_{i,G+1}$</td>
+                            <td>The mutant vector, created for individual $i$ for the next generation.</td>
+                        </tr>
+                        <tr>
+                            <td>$u_{i,G+1}$</td>
+                            <td>The trial vector, created after crossover for individual $i$.</td>
+                        </tr>
+                        <tr>
+                            <td>$G$</td>
+                            <td>The current generation number.</td>
+                        </tr>
+                        <tr>
+                            <td>$F$</td>
+                            <td>The mutation factor or scaling factor (usually between 0 and 2).</td>
+                        </tr>
+                        <tr>
+                            <td>$CR$</td>
+                            <td>The crossover rate (probability, between 0 and 1).</td>
+                        </tr>
+                        <tr>
+                            <td>$r1, r2, ...$</td>
+                            <td>Indices of random, distinct individuals from the population.</td>
+                        </tr>
+                        <tr>
+                            <td>$f(x)$</td>
+                            <td>The objective function to be minimized.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Slide 10: Mutation Strategy 1 -->
+            <div class="slide">
+                <h2 class="slide-title">Mutation Strategy: de/rand/1</h2>
+                <p>This is the most classic and widely used DE mutation strategy. It adds the scaled difference of two
+                    random vectors to a third random vector.</p>
+                <div class="equation-label">Equation:</div>
+                <div class="equation">$$v_{i,G+1} = x_{r1,G} + F \cdot (x_{r2,G} - x_{r3,G})$$</div>
+                <p>Where $r1, r2, r3$ are distinct random indices, $F$ is the mutation factor, and $G$ is the current
+                    generation.</p>
+            </div>
+
+            <!-- Slide 11: Mutation Strategy 2 -->
+            <div class="slide">
+                <h2 class="slide-title">Mutation Strategy: de/best/1</h2>
+                <p>This strategy uses the population's <strong>best</strong> vector so far as the base vector. This
+                    increases exploitation and can speed up convergence.</p>
+                <div class="equation-label">Equation:</div>
+                <div class="equation">$$v_{i,G+1} = x_{best,G} + F \cdot (x_{r1,G} - x_{r2,G})$$</div>
+                <p>Where $x_{best,G}$ is the fittest individual in the current generation.</p>
+            </div>
+
+            <!-- Slide 12: Mutation Strategy 3 -->
+            <div class="slide">
+                <h2 class="slide-title">Mutation Strategy: de/current-to-best/1</h2>
+                <p>This is a rotational-invariant strategy that combines the current vector with information about the
+                    best vector and a random difference vector.</p>
+                <div class="equation-label">Equation:</div>
+                <div class="equation">$$v_{i,G+1} = x_{i,G} + F \cdot (x_{best,G} - x_{i,G}) + F \cdot (x_{r1,G} -
+                    x_{r2,G})$$</div>
+                <p>This approach often provides a good balance between exploration and exploitation.</p>
+            </div>
+
+            <!-- Slide 13: Mutation Strategy 4 -->
+            <div class="slide">
+                <h2 class="slide-title">Mutation Strategy: de/best/2</h2>
+                <p>This strategy uses two difference vectors, which can increase population diversity and help escape
+                    local optima.</p>
+                <div class="equation-label">Equation:</div>
+                <div class="equation">$$v_{i,G+1} = x_{best,G} + F \cdot (x_{r1,G} - x_{r2,G}) + F \cdot (x_{r3,G} -
+                    x_{r4,G})$$</div>
+                <p>It's generally more exploratory than `de/best/1`.</p>
+            </div>
+
+            <!-- Slide 14: Mutation Strategy 5 -->
+            <div class="slide">
+                <h2 class="slide-title">Mutation Strategy: de/rand/2</h2>
+                <p>Similar to `de/best/2`, this strategy also uses two difference vectors but with a random base vector,
+                    further enhancing exploration.</p>
+                <div class="equation-label">Equation:</div>
+                <div class="equation">$$v_{i,G+1} = x_{r1,G} + F \cdot (x_{r2,G} - x_{r3,G}) + F \cdot (x_{r4,G} -
+                    x_{r5,G})$$</div>
+                <p>This is one of the most explorative strategies available.</p>
+            </div>
+
+            <!-- Slide 15: Crossover -->
+            <div class="slide">
+                <h2 class="slide-title">Core Operator: Crossover</h2>
+                <p>Crossover (or recombination) builds a "trial vector" $u_i$ by mixing components from the original
+                    vector $x_i$ and the mutant vector $v_i$.</p>
+                <p>The most common method is <strong>Binomial Crossover</strong>. For each dimension (gene), a random
+                    number is compared to the Crossover Rate (CR). If it's smaller, the gene is taken from the mutant
+                    vector; otherwise, it's taken from the original vector.</p>
+                <div class="equation-label">Logic:</div>
+                <div class="equation">$$u_{i,j,G+1} = \begin{cases} v_{i,j,G+1} & \text{if } \text{rand}_j \le \text{CR
+                    or } j = j_{\text{rand}} \\ x_{i,j,G} & \text{otherwise} \end{cases}$$</div>
+                <p>A "guaranteed" crossover at index $j_{rand}$ ensures the trial vector is not an exact copy of the
+                    original.</p>
+            </div>
+
+            <!-- Slide 16: Selection -->
+            <div class="slide">
+                <h2 class="slide-title">Core Operator: Selection</h2>
+                <p>Selection is the final step. It's a simple, greedy process: the newly created trial vector $u_i$ is
+                    evaluated and compared to the original vector $x_i$.</p>
+                <p>The one with the better (lower, for minimization) fitness value survives and becomes part of the
+                    population for the next generation.</p>
+                <div class="equation-label">Greedy Selection:</div>
+                <div class="equation">$$x_{i,G+1} = \begin{cases} u_{i,G+1} & \text{if } f(u_{i,G+1}) \le f(x_{i,G}) \\
+                    x_{i,G} & \text{otherwise} \end{cases}$$</div>
+            </div>
+
+            <!-- Slide 17: End -->
+            <div class="slide">
+                <h1 class="text-center mt-5">End of Presentation</h1>
+                <h3 class="text-center text-muted">Thank you!</h3>
+                <p class="text-center mt-4">Differential Evolution remains a cornerstone of evolutionary computation due
+                    to its elegant simplicity and proven effectiveness.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Footer -->
+    <div class="navigation-footer">
+        <div class="progress-container">
+            <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0"
+                aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+        <span id="slideCounter">1 / 17</span>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- KaTeX JS for LaTeX rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- LaTeX Rendering ---
+            // This will find and render all LaTeX equations in the document.
+            renderMathInElement(document.body, {
+                delimiters: [
+                    { left: '$$', right: '$$', display: true },
+                    { left: '$', right: '$', display: false },
+                    { left: '\\(', right: '\\)', display: false },
+                    { left: '\\[', right: '\\]', display: true }
+                ],
+                throwOnError: false
+            });
+
+            const slides = document.querySelectorAll('.slide');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const slideCounter = document.getElementById('slideCounter');
+            const progressBar = document.getElementById('progressBar');
+
+            let currentSlide = 0;
+            const totalSlides = slides.length;
+
+            function updateSlide() {
+                // Hide all slides
+                slides.forEach((slide) => {
+                    slide.classList.remove('active');
+                });
+
+                // Show the current slide
+                slides[currentSlide].classList.add('active');
+
+                // Update navigation buttons
+                prevBtn.disabled = currentSlide === 0;
+                nextBtn.disabled = currentSlide === totalSlides - 1;
+
+                // Update counter and progress bar
+                slideCounter.textContent = `${currentSlide + 1} / ${totalSlides}`;
+                const progressPercentage = (currentSlide / (totalSlides - 1)) * 100;
+                progressBar.style.width = `${progressPercentage}%`;
+                progressBar.setAttribute('aria-valuenow', progressPercentage);
+            }
+
+            // --- Event Listeners ---
+            nextBtn.addEventListener('click', () => {
+                if (currentSlide < totalSlides - 1) {
+                    currentSlide++;
+                    updateSlide();
+                }
+            });
+
+            prevBtn.addEventListener('click', () => {
+                if (currentSlide > 0) {
+                    currentSlide--;
+                    updateSlide();
+                }
+            });
+
+            // Allow keyboard navigation
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight') {
+                    nextBtn.click();
+                } else if (e.key === 'ArrowLeft') {
+                    prevBtn.click();
+                }
+            });
+
+            // Initial setup
+            updateSlide();
+        });
+    </script>
+</body>
+
+</html>
