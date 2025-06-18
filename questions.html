@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Machine Learning Flashcards</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- KaTeX CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            /* Prevent scrolling on the body */
+        }
+
+        body {
+            background-color: #f0f2f5;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        .main-container {
+            height: 100vh;
+        }
+
+        .flashcard-container {
+            flex-grow: 1;
+            /* Allows this container to fill available space */
+            perspective: 1500px;
+            min-height: 0;
+            /* Important for flex-grow to work correctly in all browsers */
+            position: relative;
+        }
+
+        .flashcard {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+        }
+
+        .flashcard.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+            /* Allow scrolling within the card if content overflows */
+            padding: 2rem;
+        }
+
+        .card-face-back {
+            transform: rotateY(180deg);
+        }
+
+        .card-content {
+            width: 100%;
+            max-width: 900px;
+            /* Set a max-width for readability on large screens */
+        }
+
+        .progress-bar-container {
+            height: 5px;
+        }
+
+        .nav-buttons button {
+            transition: all 0.2s ease-in-out;
+        }
+
+        .nav-buttons button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        svg {
+            max-width: 100%;
+            height: auto;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container-fluid d-flex flex-column p-3 p-md-4 main-container">
+        <h1 class="text-center h3 mb-3">Machine Learning Q&A Flashcards</h1>
+
+        <div class="flashcard-container mb-3">
+            <div id="flashcard" class="flashcard">
+                <div class="card card-face card-face-front shadow-lg">
+                    <div id="card-question" class="card-body card-content">
+                        <!-- Question content goes here -->
+                    </div>
+                </div>
+                <div class="card card-face card-face-back shadow-lg">
+                    <div id="card-answer" class="card-body card-content">
+                        <!-- Answer content goes here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="progress progress-bar-container mb-3" role="progressbar" aria-valuenow="0" aria-valuemin="0"
+            aria-valuemax="100">
+            <div id="progress-bar" class="progress-bar" style="width: 0%"></div>
+        </div>
+
+        <div class="d-flex justify-content-center align-items-center nav-buttons">
+            <button id="prev-btn" class="btn btn-secondary mx-2"><i class="fas fa-arrow-left"></i> Previous</button>
+            <button id="flip-btn" class="btn btn-primary mx-2">Flip Card</button>
+            <button id="next-btn" class="btn btn-secondary mx-2">Next <i class="fas fa-arrow-right"></i></button>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Font Awesome for icons -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <!-- KaTeX JS -->
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <!-- KaTeX Auto-render extension -->
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <script>
+        // Data extracted and converted from the LaTeX document
+        const flashcards = [
+            // SECTION: Datasets
+            {
+                "question": "<h3>Datasets</h3><h4>1. What are the most important factors to consider when constructing datasets for training machine learning models?</h4>",
+                "answer": "<h3>Datasets</h3><h4>1. Important Factors for Dataset Construction</h4><ol><li><strong>Quality and Cleanliness:</strong> The dataset must be free of errors, inconsistencies, and noise. This includes handling missing values and correcting inaccuracies. Poor quality data leads to a 'garbage in, garbage out' scenario.</li><li><strong>Representativeness and Diversity:</strong> The dataset must be a faithful representation of the real-world data the model will encounter. It should cover a wide range of scenarios, edge cases, and demographics.</li><li><strong>Sufficient Size and Volume:</strong> The dataset needs to be large enough for the model to learn the underlying patterns without memorizing the training data (overfitting). The required size depends on the complexity of the problem and the model.</li></ol>"
+            },
+            {
+                "question": "<h3>Datasets</h3><h4>2. Why is a large dataset not always a guarantee of good model performance?</h4>",
+                "answer": "<h3>Datasets</h3><h4>2. Why a Large Dataset Isn't Always Better</h4><p>The quality of data is often more important than quantity. A large dataset might fail if it has:</p><ul><li><strong>Lack of Representative Information:</strong> A huge dataset biased towards one category (e.g., 99% of car photos are of one model) won't generalize well.</li><li><strong>Absence of Meaningful Features:</strong> If the features don't contain information that helps distinguish between outputs (e.g., predicting car price from its color), the dataset is useless.</li><li><strong>Systematic Bias and Noise:</strong> If data was collected with miscalibrated sensors, a large volume only reinforces learning the incorrect pattern.</li></ul>"
+            },
+            {
+                "question": "<h3>Datasets</h3><h4>3. What is the difference between regression and classification? Give 3 examples for each.</h4>",
+                "answer": "<h3>Datasets</h3><h4>3. Regression vs. Classification</h4><p>The fundamental difference is in the predicted output:</p><ul><li><strong>Classification:</strong> Predicts a discrete category or class label (e.g., 'spam' or 'not spam').</li><li><strong>Regression:</strong> Predicts a continuous numerical value (e.g., the price of a house).</li></ul><div class='row'><div class='col-md-6'><h5>Classification Examples:</h5><ol><li>Email spam detection (`spam` / `not spam`).</li><li>Image recognition (`car`, `truck`, `bicycle`).</li><li>Medical diagnosis (`defective` / `not defective` part).</li></ol></div><div class='col-md-6'><h5>Regression Examples:</h5><ol><li>Predicting used car prices.</li><li>Forecasting EV battery range.</li><li>Estimating tire pressure from speed and temperature.</li></ol></div></div>"
+            },
+            {
+                "question": "<h3>Datasets</h3><h4>4. Create a dataset for classification in the automotive field (2 inputs, 1 output).</h4>",
+                "answer": "<h3>Datasets</h3><h4>4. Example Classification Dataset</h4><p><strong>Task:</strong> Predict if a tire is underinflated.</p><ul><li>Input 1: `Vibration_Level`</li><li>Input 2: `Temperature_Rise` ($^\\circ$C)</li><li>Output: `Is_Underinflated` (0=No, 1=Yes)</li></ul><table class='table table-bordered text-center'><thead><tr><th>Vibration_Level</th><th>Temp_Rise ($^\\circ$C)</th><th>Is_Underinflated</th></tr></thead><tbody><tr><td>1.2</td><td>2.5</td><td>0</td></tr><tr><td>3.8</td><td>8.9</td><td>1</td></tr><tr><td>4.5</td><td>10.2</td><td>1</td></tr></tbody></table>"
+            },
+            {
+                "question": "<h3>Datasets</h3><h4>5. Create a dataset for regression in the automotive field (3 inputs, 1 output).</h4>",
+                "answer": "<h3>Datasets</h3><h4>5. Example Regression Dataset</h4><p><strong>Task:</strong> Predict the market value of a used car.</p><ul><li>Input 1: `Mileage` (km)</li><li>Input 2: `Engine_Size` (L)</li><li>Input 3: `Age` (years)</li><li>Output: `Price` (€)</li></ul><table class='table table-bordered text-center'><thead><tr><th>Mileage (km)</th><th>Engine_Size (L)</th><th>Age (years)</th><th>Price (€)</th></tr></thead><tbody><tr><td>50,000</td><td>2.0</td><td>3</td><td>25,000</td></tr><tr><td>120,000</td><td>1.6</td><td>8</td><td>9,500</td></tr><tr><td>15,000</td><td>3.0</td><td>1</td><td>48,000</td></tr></tbody></table>"
+            },
+            {
+                "question": "<h3>Datasets</h3><h4>6. What is “ground truth”? Give examples with your datasets.</h4>",
+                "answer": "<h3>Datasets</h3><h4>6. Ground Truth</h4><p><strong>Ground truth</strong> refers to the factual, correct labels or output values for a given set of inputs, used as the 'correct answer' for training and evaluation.</p><ul><li><strong>Classification Example:</strong> The `Is_Underinflated` column is the ground truth, determined by a mechanic physically measuring tire pressure.</li><li><strong>Regression Example:</strong> The `Price` column is the ground truth, representing the actual price at which a car was sold.</li></ul>"
+            },
+            {
+                "question": "<h3>Datasets</h3><h4>7. What is the purpose of having training, validation, and testing datasets?</h4>",
+                "answer": "<h3>Datasets</h3><h4>7. Purpose of Training, Validation, and Test Sets</h4><ul><li><strong>Training Set (70-80%):</strong> The data used to actually train the model's parameters (weights and biases).</li><li><strong>Validation Set (10-15%):</strong> Data used to tune hyperparameters (like learning rate) and make decisions like when to stop training (early stopping). The model does not learn from this data.</li><li><strong>Test Set (10-15%):</strong> Held back until the very end. Used only once to get an unbiased, final estimate of the model's performance on unseen data.</li></ul>"
+            },
+            // SECTION: Neural Networks
+            {
+                "question": "<h3>Neural Networks</h3><h4>1. Describe the concept of the perceptron. How is the firing condition computed?</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>1. The Perceptron</h4><p>The Perceptron is the simplest neural network, a single neuron acting as a linear binary classifier. It takes weighted inputs, sums them up, and 'fires' if the sum exceeds a threshold.</p><p><strong>Firing Condition:</strong> The output is 1 if the weighted sum is greater than a threshold $\\theta$, and 0 otherwise.$$ \\text{output} = \\begin{cases} 1 & \\text{if } \\sum_{i=1}^{n} w_i x_i > \\theta \\\\ 0 & \\text{otherwise} \\end{cases} $$</p>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>2. What are the learnable parameters in a single perceptron?</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>2. Learnable Parameters in a Perceptron</h4><p>The parameters adjusted during training are:</p><ol><li><strong>The Weights ($w_i$):</strong> These determine the importance of each input.</li><li><strong>The Bias ($b$):</strong> The threshold $\\theta$ is typically rewritten as a bias term ($b = -\\theta$), which shifts the decision boundary. The equation becomes $\\sum w_i x_i + b > 0$.</li></ol>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>3. Why is the bias important for the perceptron?</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>3. Importance of the Bias</h4><p>The bias provides flexibility. Geometrically, the weights determine the *orientation* of the decision boundary line/plane, but without a bias, this boundary is forced to pass through the origin (0,0). The bias allows the decision boundary to be *shifted*, enabling the model to solve a much wider range of problems that are not separable through the origin.</p>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>4. What is an activation function? What are its required properties?</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>4. Activation Function</h4><p>An activation function introduces <strong>non-linearity</strong> into a neural network, allowing it to learn complex patterns beyond simple linear relationships.</p><p><strong>Required Properties:</strong></p><ol><li><strong>Non-linear:</strong> The most crucial property. Without it, a multi-layer network collapses into a single linear model.</li><li><strong>Differentiable:</strong> Necessary for gradient-based training methods like backpropagation.</li></ol>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>5. Describe the Step, Sigmoid, Tanh, and ReLU activation functions (input/output range).</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>5. Common Activation Functions</h4><ul><li><strong>Step:</strong> Input $(-\\infty, \\infty)$, Output $\{0, 1\}$. Not used in modern NNs as it's not differentiable at 0.</li><li><strong>Sigmoid:</strong> Input $(-\\infty, \\infty)$, Output $(0, 1)$. S-shaped, good for probabilities, but suffers from vanishing gradients. $\\sigma(x) = \\frac{1}{1 + e^{-x}}$</li><li><strong>Tanh:</strong> Input $(-\\infty, \\infty)$, Output $(-1, 1)$. Zero-centered version of sigmoid, often converges faster. $\\tanh(x)$</li><li><strong>ReLU:</strong> Input $(-\\infty, \\infty)$, Output $[0, \\infty)$. Computationally efficient, helps prevent vanishing gradients, but can 'die'. $f(x) = \\max(0, x)$</li></ul>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>6. What is supervised vs. unsupervised learning? Which is most used for NNs?</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>6. Supervised vs. Unsupervised Learning</h4><ul><li><strong>Supervised Learning:</strong> The model learns from <strong>labeled data</strong> (inputs have correct outputs). The goal is to learn a mapping function. <em>This is by far the most common methodology for training NNs.</em></li><li><strong>Unsupervised Learning:</strong> The model learns from <strong>unlabeled data</strong>. The goal is to find hidden patterns or structures, like clustering.</li></ul>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>7. What is a loss function, and why is it needed for training?</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>7. Loss Function</h4><p>A <strong>loss function</strong> (or cost function) quantifies the difference between the model's predicted output and the actual ground truth. It measures how 'wrong' the model's prediction is.</p><p><strong>Why it's needed:</strong> Training a model is an optimization problem where the goal is to <strong>minimize the loss</strong>. The loss value is used by an optimizer (like gradient descent) to calculate the direction in which to adjust the model's weights to improve its accuracy.</p>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>8. Describe MSE, MAE, and BCE loss functions.</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>8. Common Loss Functions</h4><svg viewBox='-50 -20 300 150'><path d='M 0 100 A 50 100 0 0 1 100 0 A 50 100 0 0 1 200 100' stroke='blue' fill='none' stroke-width='2'></path><path d='M0 100 L 100 0 L 200 100' stroke='red' fill='none' stroke-width='2'></path><path d='M100 0 C 120 0, 150 20, 190 100' stroke='green' fill='none' stroke-width='2'></path><text x='-45' y='10' fill='blue'>MSE</text><text x='-45' y='25' fill='red'>MAE</text><text x='-45' y='40' fill='green'>BCE</text><line x1='-5' y1='0' x2='-5' y2='100' stroke='black'></line><line x1='-5' y1='100' x2='205' y2='100' stroke='black'></line><text x='90' y='115'>$\\hat{y}$</text><text x='-25' y='50' transform='rotate(-90 -25,50)'>Loss</text></svg><ul><li><strong>MSE (Mean Squared Error):</strong> $L = \\frac{1}{N}\\sum(y_i - \\hat{y}_i)^2$. For regression. Penalizes large errors heavily, but is sensitive to outliers.</li><li><strong>MAE (Mean Absolute Error):</strong> $L = \\frac{1}{N}\\sum|y_i - \\hat{y}_i|$. For regression. More robust to outliers than MSE.</li><li><strong>BCE (Binary Cross-Entropy):</strong> $L = -\\frac{1}{N}\\sum [y_i \\log(\\hat{y}_i) + (1 - y_i) \\log(1 - \\hat{y}_i)]$. For binary classification. Measures the distance between probability distributions.</li></ul>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>9. What are the requirements to train a neural network?</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>9. Requirements to Train a Neural Network</h4><ol><li><strong>A Dataset:</strong> Labeled data for supervised learning, split into train/validation/test sets.</li><li><strong>A Model Architecture:</strong> The definition of the network (layers, neurons, activation functions).</li><li><strong>A Loss Function:</strong> A function to measure the model's error (e.g., MSE, BCE).</li><li><strong>An Optimizer:</strong> An algorithm to update the model's weights to minimize the loss (e.g., Adam, SGD).</li></ol>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>10. What is the objective of applying gradient descent on neural networks?</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>10. Objective of Gradient Descent</h4><p>The objective of gradient descent is to <strong>find the set of weights and biases that minimizes the loss function</strong>. It's an iterative algorithm that takes steps on the loss surface in the direction of the steepest descent (the negative gradient) to find a local minimum.</p>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>11. What is the objective of applying batch gradient descent for training?</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>11. Objective of Batch Gradient Descent</h4><p>The objective is the same—minimize loss—but its specific characteristic is that it calculates the gradient using the <strong>entire training dataset</strong> in each step. This provides an accurate gradient and a stable convergence path, but it is computationally and memory-intensive for large datasets and thus rarely used in practice.</p>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>12. Why do we need to run an optimizer to train our neural network?</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>12. Why We Need an Optimizer</h4><p>An optimizer is the engine that drives learning. While the gradient tells us the <em>direction</em> to improve, the optimizer implements the update rule and determines <em>how</em> to take steps in that direction. Advanced optimizers like Adam adapt the learning rate for each parameter, leading to faster and more stable training.</p>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>13. In supervised learning, what is the term “predictions”? Give an example.</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>13. The Term 'Predictions'</h4><p><strong>Predictions</strong> (often $\\hat{y}$) are the outputs generated by the model for a given input. It is the model's 'best guess' for the correct output.</p><p><strong>Example:</strong> For the car price regression task, if we input `(Mileage=50000, Engine_Size=2.0, Age=3)`, the model might output `24,500`. This value is the prediction, which is then compared to the ground truth (`25,000`).</p>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>14. Why separate datasets into train, validation, and test? How should they be created?</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>14. Why Separate Datasets?</h4><p>We separate datasets to train the model, tune its hyperparameters, and get an unbiased final evaluation.</p><p><strong>How to create:</strong> They must be created by <strong>randomly sampling</strong> from the original dataset to ensure they share the same statistical properties. For classification, this is often done with <strong>stratified sampling</strong> to preserve the ratio of classes in each set.</p>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>15. Describe a Multilayer Perceptron (MLP) and a Feedforward Neural Network.</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>15. Multilayer Perceptron (MLP)</h4><p>An MLP is a type of <strong>feedforward neural network</strong>, meaning data flows in one direction from input to output. It consists of an input layer, one or more <strong>hidden layers</strong>, and an output layer. Its key properties are:</p><ul><li><strong>Non-linear Decision Boundaries:</strong> With non-linear activations, MLPs can learn complex boundaries that single perceptrons cannot.</li><li><strong>Hierarchical Feature Learning:</strong> The hidden layers learn progressively more complex features from the data, which is the source of their power.</li></ul>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>16. Why is an MLP network able to create multiple decision surfaces?</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>16. How MLPs Create Multiple Decision Surfaces</h4><p>A single perceptron creates one linear boundary. An MLP combines many. Each neuron in the first hidden layer defines its own linear boundary. The next layer can then combine these boundaries in non-linear ways (e.g., using logical AND/OR-like operations), allowing the network to form arbitrarily complex, non-convex decision regions in the feature space.</p>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>17. Why do we need non-linear activations in an MLP? Prove it.</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>17. Why Non-Linear Activations are Essential</h4><p>If an MLP used only linear activations ($f(x)=x$), the entire network would collapse into a single, equivalent linear transformation. No matter how many layers, it could not learn anything more complex than a simple linear model.</p><p><strong>Proof:</strong> Two sequential linear layers $y = w_2(w_1x + b_1) + b_2$ simplify to $y = (w_2w_1)x + (w_2b_1 + b_2)$, which is just another linear equation $y = W_{new}x + B_{new}$.</p>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>18. Describe the main steps for training an MLP.</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>18. Main Steps for Training an MLP</h4><ol><li><strong>Initialization:</strong> Initialize weights with small random values and biases to zero.</li><li><strong>Forward Propagation:</strong> Pass a batch of input data through the network to get predictions.</li><li><strong>Compute Loss:</strong> Compare predictions to ground truth labels using a loss function.</li><li><strong>Backward Propagation:</strong> Calculate the gradient of the loss with respect to each weight and bias using the chain rule.</li><li><strong>Update Parameters:</strong> Use an optimizer to update the weights and biases in the direction opposite to the gradient.</li><li><strong>Repeat:</strong> Repeat steps 2-5 for many epochs.</li></ol>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>19. Why do we need to initialize weights with random values?</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>19. Why Initialize Weights Randomly</h4><p>If all weights are initialized to the same value (e.g., zero), every neuron in a layer will compute the same output and receive the same gradient. They will all update identically, preventing them from learning different features. This is known as the <strong>symmetry problem</strong>.</p><p>Initializing with small random values breaks this symmetry, allowing each neuron to follow a unique learning path.</p>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>20. In a deep MLP, what happens to the first layers during backpropagation?</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>20. The Vanishing Gradient Problem</h4><p>In a very deep network, gradients can shrink exponentially as they are propagated backward from the output to the input layers. This is the <strong>vanishing gradient problem</strong>.</p><p><strong>What happens:</strong> The gradients for the first few layers become infinitesimally small. As a result, their weights are updated very slowly, or not at all. These early layers fail to learn, crippling the entire network's performance.</p>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>21. How to solve the problem of vanishing or exploding gradients?</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>21. Solving Vanishing/Exploding Gradients</h4><ul><li><strong>Vanishing Gradients:</strong> Occur when gradient values are consistently < 1.</li><li><strong>Exploding Gradients:</strong> Occur when gradient values are consistently > 1.</li></ul><p><strong>Approaches to solve it:</strong></p><ol><li><strong>Use ReLU Activations:</strong> The derivative is 1 for positive inputs, preventing shrinkage.</li><li><strong>Use Batch Normalization:</strong> Normalizes layer outputs to keep signals stable.</li><li><strong>Gradient Clipping:</strong> For exploding gradients, cap the gradient at a maximum value.</li><li><strong>Better Weight Initialization:</strong> Schemes like Xavier or He initialization keep signal variance consistent.</li><li><strong>Use Residual Networks (ResNets):</strong> Skip connections provide a direct path for the gradient to flow.</li></ol>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>22 & 23. Can activation functions mitigate the problem of vanishing gradients?</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>22 & 23. Activation Functions and Vanishing Gradients</h4><p>Yes, absolutely. The choice of activation function is a primary tool against vanishing gradients. Traditional functions like <strong>sigmoid</strong> and <strong>tanh</strong> have derivatives < 1, causing gradients to shrink.</p><p>The <strong>ReLU</strong> activation function was a breakthrough because its derivative is 1 for any positive input. This allows the gradient to pass backward through layers without shrinking, enabling deep networks to learn effectively. However, it's not a silver bullet due to the 'dying ReLU' problem, so it's best used with other techniques like proper initialization.</p>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>24. What is Binary Classification? Can a single neuron model multiple classes?</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>24. Binary Classification and Multi-class Neurons</h4><ul><li><strong>Binary Classification:</strong> A task with exactly two possible output classes (e.g., Yes/No, 0/1).</li><li><strong>Can a single neuron model multiple classes?</strong> No. A standard neuron with a sigmoid activation is an inherent binary classifier. For multi-class problems, you need multiple output neurons (one per class) and a <strong>Softmax</strong> activation function.</li></ul>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>25. Why is the Sigmoid activation function good for classification? What is its probabilistic meaning?</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>25. Why Sigmoid is Good for Classification</h4><p>The Sigmoid function, $\\sigma(x) = \\frac{1}{1 + e^{-x}}$, is ideal for binary classification because its output range is $(0, 1)$.</p><p><strong>Probabilistic Meaning:</strong> The output can be directly interpreted as a <strong>probability</strong>. An output of 0.8 means the model is 80% confident the input belongs to the positive class (class 1).</p>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>26. Model an MLP for an airbag suppression task.</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>26. MLP for Airbag Suppression</h4><p><strong>Task:</strong> Binary classification to Deploy (1) or Suppress (0) an airbag based on mass, height, and acceleration.</p><h5>Model Drawing</h5><svg viewBox='-20 -20 300 150'><defs><marker id='arrow' viewBox='0 0 10 10' refX='5' refY='5' markerWidth='3' markerHeight='3' orient='auto-start-reverse'><path d='M 0 0 L 10 5 L 0 10 z' fill='gray' /></marker></defs><g class='input-layer'><circle cx='0' cy='25' r='10' fill='lightgreen' stroke='black' /><text x='0' y='28' text-anchor='middle'>$x_1$</text><text x='-30' y='0' font-size='8'>Mass</text><circle cx='0' cy='65' r='10' fill='lightgreen' stroke='black' /><text x='0' y='68' text-anchor='middle'>$x_2$</text><text x='-30' y='40' font-size='8'>Height</text><circle cx='0' cy='105' r='10' fill='lightgreen' stroke='black' /><text x='0' y='108' text-anchor='middle'>$x_3$</text><text x='-30' y='80' font-size='8'>Accel</text></g><g class='hidden-layer'><circle cx='100' cy='10' r='10' fill='lightblue' stroke='black'/><text x='100' y='13' text-anchor='middle'>$h_1$</text><circle cx='100' cy='45' r='10' fill='lightblue' stroke='black'/><text x='100' y='48' text-anchor='middle'>$h_2$</text><circle cx='100' cy='80' r='10' fill='lightblue' stroke='black'/><text x='100' y='83' text-anchor='middle'>$h_3$</text><circle cx='100' cy='115' r='10' fill='lightblue' stroke='black'/><text x='100' y='118' text-anchor='middle'>$h_4$</text></g><g class='output-layer'><circle cx='200' cy='65' r='10' fill='salmon' stroke='black' /><text x='200' y='68' text-anchor='middle'>$\\hat{y}$</text><text x='200' y='45' text-anchor='middle' font-size='8'>Sigmoid($\\sigma$)</text></g><g class='connections' stroke='gray' marker-end='url(#arrow)'> <line x1='10' y1='25' x2='90' y2='10' /><line x1='10' y1='25' x2='90' y2='45' /><line x1='10' y1='25' x2='90' y2='80' /><line x1='10' y1='25' x2='90' y2='115' /><line x1='10' y1='65' x2='90' y2='10' /><line x1='10' y1='65' x2='90' y2='45' /><line x1='10' y1='65' x2='90' y2='80' /><line x1='10' y1='65' x2='90' y2='115' /><line x1='10' y1='105' x2='90' y2='10' /><line x1='10' y1='105' x2='90' y2='45' /><line x1='10' y1='105' x2='90' y2='80' /><line x1='10' y1='105' x2='90' y2='115' /><line x1='110' y1='10' x2='190' y2='65' /><line x1='110' y1='45' x2='190' y2='65' /><line x1='110' y1='80' x2='190' y2='65' /><line x1='110' y1='115' x2='190' y2='65' /></g></svg><p>The ideal loss function is <strong>Binary Cross-Entropy (BCE)</strong> as it's designed for tasks where the output is a probability from a sigmoid function. The confidence score can be used as a threshold (e.g., > 0.5 means Deploy).</p>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>27. What is a 'hyperparameter' in the context of a neural network?</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>27. Hyperparameter Definition</h4><p>A <strong>hyperparameter</strong> is a configuration variable that is external to the model and set <em>before</em> the learning process begins. They are not learned from the data like weights are. They define the architecture and control training.</p><p>Examples: learning rate, number of hidden layers, number of neurons, choice of activation function, batch size.</p>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>28. How does the learning rate affect training performance?</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>28. Effect of Learning Rate</h4><ul><li><strong>Too Small:</strong> The model learns very slowly and may take too long to converge or get stuck in a shallow local minimum.</li><li><strong>Too Large:</strong> The model takes huge steps, causing it to overshoot the minimum. The loss will oscillate wildly and fail to converge.</li><li><strong>Just Right:</strong> A good learning rate allows the model to converge to a good solution efficiently and stably.</li></ul>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>29. What is an outlier sample and how do you deal with it?</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>29. Outlier Samples</h4><p>An <strong>outlier</strong> is a data point that differs significantly from other observations, often due to error or a rare event. They can severely skew training, especially with loss functions like MSE.</p><p><strong>How to deal with them:</strong></p><ul><li><strong>Identify:</strong> Use statistical methods (Z-score, Interquartile Range) or visualization (box plots).</li><li><strong>Handle:</strong> Use a robust loss function (like MAE), or remove/cap the outlier values during data preprocessing.</li></ul>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>30. What is the problem of data imbalance and how do you deal with it?</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>30. Data Imbalance</h4><p>This occurs when classes in a dataset are highly unequal (e.g., 99% non-fraud vs. 1% fraud). A naive model can get high accuracy by always predicting the majority class, but it's useless.</p><p><strong>Strategies to overcome:</strong></p><ol><li><strong>Resampling:</strong> Oversample the minority class (e.g., using SMOTE) or undersample the majority class.</li><li><strong>Use Different Metrics:</strong> Don't use Accuracy. Use Precision, Recall, and F1-Score, which focus on the minority class performance.</li><li><strong>Class Weighting:</strong> Adjust the loss function to penalize errors on the minority class more heavily.</li></ol>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>31. What is the problem of absence of data in the dataset and how to deal with it?</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>31. Absence of Data (Missing Values)</h4><p>Neural networks cannot process missing (`NaN`) values. They must be handled.</p><p><strong>How to deal with it:</strong></p><ol><li><strong>Deletion:</strong> If only a few rows have missing data, they can be deleted, but this is often too drastic.</li><li><strong>Imputation:</strong> Fill in the missing values with the mean, median (most robust), or mode of the column.</li><li><strong>Create a Missing Indicator:</strong> Add a new binary column indicating if the original value was missing. This allows the model to learn if the absence of data is itself a useful signal.</li></ol>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>32. How can you train models with datasets too large for RAM/VRAM?</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>32. Training with Large Datasets</h4><p>When a dataset doesn't fit in memory, you cannot use batch gradient descent. Instead, use:</p><ol><li><strong>Mini-Batch Gradient Descent:</strong> This is the standard practice. The dataset is split into small chunks ('mini-batches'), and the model is trained on one batch at a time. It balances gradient accuracy and memory efficiency.</li><li><strong>Data Generators/Pipelines:</strong> Tools like `tf.data` or `DataLoader` load only the current mini-batch from disk into memory when needed, allowing training on virtually any size dataset.</li></ol>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>33. Why is it good to apply normalization? Compare min-max vs. standardization.</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>33. Normalization of Inputs</h4><p><strong>Why it's good:</strong> If input features have vastly different scales (e.g., age 1-15 vs. mileage 10k-200k), the loss surface becomes a stretched-out bowl, making it hard for gradient descent to converge. Normalization creates a more spherical loss surface, leading to faster, more stable training.</p><ul><li><strong>Min-Max Normalization:</strong> Scales data to a fixed range (usually [0, 1]). Prone to distortion by outliers. Formula: $\\frac{X - X_{min}}{X_{max} - X_{min}}$</li><li><strong>Standardization (Z-score):</strong> Scales data to have a mean of 0 and standard deviation of 1. Much more robust to outliers. This is generally the recommended method. Formula: $\\frac{X - \\mu}{\\sigma}$</li></ul>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>34. What are the metrics for measuring the performance of regression models?</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>34. Metrics for Regression Models</h4><ol><li><strong>Mean Squared Error (MSE):</strong> Emphasizes large errors but is sensitive to outliers and has unintuitive squared units.</li><li><strong>Root Mean Squared Error (RMSE):</strong> Fixes the unit problem of MSE but is still sensitive to outliers.</li><li><strong>Mean Absolute Error (MAE):</strong> Robust to outliers and has intuitive units, making it easy to explain.</li><li><strong>R-squared ($R^2$):</strong> Measures the proportion of variance in the output that's predictable from the input. Score from 0 to 1 provides a relative measure of fit.</li></ol>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>35. What is a confusion matrix?</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>35. Confusion Matrix</h4><p>A confusion matrix is a table that describes the performance of a classification model, breaking down the correct and incorrect predictions for each class.</p><table class='table table-bordered text-center'><thead><tr><th scope='col' colspan='2' rowspan='2'></th><th scope='col' colspan='2'>Predicted Class</th></tr><tr><th scope='col'>Positive (1)</th><th scope='col'>Negative (0)</th></tr></thead><tbody><tr><th scope='row' rowspan='2' class='align-middle'>Actual Class</th><th scope='row'>Positive (1)</th><td><strong>True Positive (TP)</strong></td><td><strong>False Negative (FN)</strong></td></tr><tr><th scope='row'>Negative (0)</th><td><strong>False Positive (FP)</strong></td><td><strong>True Negative (TN)</strong></td></tr></tbody></table><ul><li><strong>TP:</strong> Actual=1, Predicted=1</li><li><strong>TN:</strong> Actual=0, Predicted=0</li><li><strong>FP:</strong> Type I error. Actual=0, Predicted=1</li><li><strong>FN:</strong> Type II error. Actual=1, Predicted=0. Often the most critical error.</li></ul>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>36. What are metrics for classification models? (Accuracy, Precision, Recall, F1)</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>36. Metrics for Classification Models</h4><ul><li><strong>Accuracy:</strong> $\\frac{TP+TN}{\\text{Total}}$. Proportion of correct predictions. Misleading for imbalanced datasets.</li><li><strong>Precision:</strong> $\\frac{TP}{TP+FP}$. Of all positive predictions, how many were correct? (Measures relevance).</li><li><strong>Recall (Sensitivity):</strong> $\\frac{TP}{TP+FN}$. Of all actual positives, how many did the model find? (Measures completeness).</li><li><strong>F1-Score:</strong> $2 \\cdot \\frac{Precision \\cdot Recall}{Precision + Recall}$. The harmonic mean of Precision and Recall, balancing both.</li></ul>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>37. Why is it necessary to select a threshold for a Sigmoid function?</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>37. Necessity of a Threshold for Sigmoid</h4><p>A Sigmoid function outputs a continuous probability between 0 and 1. To make a concrete decision (class 0 or 1), we must convert this probability into a binary output. A <strong>threshold</strong> is the rule for this conversion (e.g., if probability > 0.5, classify as 1). This threshold can be tuned to balance the trade-off between false positives and false negatives based on the problem's needs.</p>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>38. What is the underfitting problem?</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>38. Underfitting Problem</h4><p>Underfitting occurs when a model is too simple to capture the underlying patterns in the data. It has high bias and performs poorly on both the training and test sets.</p><p><strong>How to overcome it:</strong></p><ul><li>Increase model complexity (more layers/neurons).</li><li>Add more features.</li><li>Train longer.</li></ul>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>39. What is the overfitting problem?</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>39. Overfitting Problem</h4><p>Overfitting occurs when a model learns the training data too well, including its noise. It has high variance, performing exceptionally well on training data but poorly on unseen test data.</p><p><strong>How to overcome it:</strong></p><ul><li>Get more data (most effective).</li><li>Simplify the model.</li><li>Use regularization (L1, L2, Dropout).</li><li>Use Early Stopping.</li></ul>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>40. During training, how can you identify overfitting or underfitting?</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>40. Identifying Overfitting/Underfitting</h4><p>Plot the training loss and the validation loss over epochs:</p><ul><li><strong>Underfitting:</strong> Both training and validation loss remain high and do not decrease much.</li><li><strong>Overfitting:</strong> Training loss continues to decrease while validation loss begins to increase. The gap between the two curves widens.</li><li><strong>Good Fit:</strong> Both curves decrease and converge to a low value.</li></ul>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>41. What is a multi-task MLP neural network architecture?</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>41. Multi-Task MLP Architecture</h4><p>A multi-task learning (MTL) architecture is a single neural network designed to solve multiple related tasks simultaneously. It typically has a shared 'body' of layers that learn general features, which then branch out into multiple task-specific 'heads'.</p><p><strong>Automotive Example:</strong> A network processing camera images could have one head for classifying objects (Car, Pedestrian) and another head for regressing the distance to that object.</p>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>42. How do you combine multi-task models and compute the loss?</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>42. Combining Multi-Task Models and Losses</h4><p>In an MTL model, you have a separate loss function for each task head (e.g., Cross-Entropy for classification, MSE for regression). To train the model, these individual losses are combined into a single total loss, most commonly as a <strong>weighted sum</strong>:$$ L_{total} = w_{class} \\cdot L_{class} + w_{reg} \\cdot L_{reg} $$The weights ($w_{class}, w_{reg}$) are hyperparameters that balance the importance of each task. The optimizer then minimizes this single $L_{total}$.</p>"
+            },
+            {
+                "question": "<h3>Neural Networks</h3><h4>43. What is transfer learning? Explain the concept for MLPs.</h4>",
+                "answer": "<h3>Neural Networks</h3><h4>43. Transfer Learning with MLPs</h4><p>Transfer learning is a technique where a model developed for a Task A is reused as the starting point for a model on a different but related Task B.</p><p><strong>Application to MLPs:</strong></p><ol><li><strong>Pre-training:</strong> A large MLP is trained on a massive, general dataset. The early layers of this model learn to extract robust, general-purpose features.</li><li><strong>Fine-tuning:</strong> Take the pre-trained model, remove its final layer, and add a new output layer for your specific task. Then 'freeze' the early layers and train only the last few layers on your new, smaller dataset. This leverages the pre-learned knowledge for better performance with less data.</li></ol>"
+            },
+            // SECTION: Genetic Algorithms and DE
+            {
+                "question": "<h3>Genetic Algorithms</h3><h4>1. Define a genetic algorithm.</h4>",
+                "answer": "<h3>Genetic Algorithms</h3><h4>1. Genetic Algorithm (GA)</h4><p>A Genetic Algorithm is a search heuristic inspired by Charles Darwin's theory of natural evolution. It's used to find approximate solutions to optimization problems by mimicking processes like selection, crossover, and mutation.</p>"
+            },
+            {
+                "question": "<h3>Genetic Algorithms</h3><h4>2. Define a differential evolution algorithm.</h4>",
+                "answer": "<h3>Genetic Algorithms</h3><h4>2. Differential Evolution (DE)</h4><p>Differential Evolution is an evolutionary algorithm for optimization. Its distinguishing feature is that it creates new candidate solutions by combining existing ones using vector differences. It's often very effective for real-valued optimization problems.</p>"
+            },
+            {
+                "question": "<h3>Genetic Algorithms</h3><h4>3. When to use GA or DE instead of Neural Networks?</h4>",
+                "answer": "<h3>Genetic Algorithms</h3><h4>3. When to Use GA/DE Instead of NNs</h4><p>Use GA/DE for <strong>optimization problems</strong> where:</p><ul><li>The objective function is non-differentiable, discontinuous, or has many local optima (making gradient-based NN training unsuitable).</li><li>You don't have a labeled dataset but can define a <strong>fitness function</strong> to score a solution.</li><li>The goal is to find an optimal set of parameters or a configuration (e.g., tuning the hyperparameters of an NN itself).</li></ul>"
+            },
+            {
+                "question": "<h3>Genetic Algorithms</h3><h4>4. What is an objective function?</h4>",
+                "answer": "<h3>Genetic Algorithms</h3><h4>4. Objective Function</h4><p>An <strong>objective function</strong> (or fitness function) is a function that quantifies the quality of a potential solution. It takes a candidate solution as input and returns a single numerical score. The goal of the algorithm is to find the solution that minimizes or maximizes this function.</p>"
+            },
+            {
+                "question": "<h3>Genetic Algorithms</h3><h4>5. Why do we need to define boundary conditions to the variables?</h4>",
+                "answer": "<h3>Genetic Algorithms</h3><h4>5. Why Define Boundary Conditions</h4><p>Boundary conditions define the feasible search space. They are needed to:</p><ol><li><strong>Reflect Real-World Constraints:</strong> A variable for engine size must be within a logical range (e.g., [0.8, 8.0] liters).</li><li><strong>Improve Search Efficiency:</strong> Prevents the algorithm from wasting time exploring nonsensical regions of the search space.</li></ol>"
+            },
+            {
+                "question": "<h3>Genetic Algorithms</h3><h4>6. Can we use GA or DE to solve maximization problems?</h4>",
+                "answer": "<h3>Genetic Algorithms</h3><h4>6. Solving Maximization Problems</h4><p>Yes. Most optimizers are designed to minimize. To solve a maximization problem for a function $f(x)$, you can simply minimize its negative: $f'(x) = -f(x)$.</p>"
+            },
+            {
+                "question": "<h3>Genetic Algorithms</h3><h4>7. What is the Population? How do we initialize it?</h4>",
+                "answer": "<h3>Genetic Algorithms</h3><h4>7. The Population and Initialization</h4><p>The <strong>Population</strong> is a set of candidate solutions to the problem. Each candidate is called an 'individual'.</p><p>The population is typically initialized <strong>randomly</strong>, with each variable for each individual being assigned a random value within its defined boundary conditions. This ensures broad coverage of the search space at the start.</p>"
+            },
+            {
+                "question": "<h3>Genetic Algorithms</h3><h4>8. How do we evolve the population?</h4>",
+                "answer": "<h3>Genetic Algorithms</h3><h4>8. How the Population Evolves</h4><p>The population evolves over generations. In each generation, evolutionary operators are applied:</p><ol><li><strong>Mutation:</strong> New candidate solutions (mutant vectors) are created by perturbing existing ones.</li><li><strong>Crossover (Recombination):</strong> The mutant is combined with a parent to create a trial vector.</li><li><strong>Selection:</strong> The fitness of the trial vector is compared to the parent, and the better one survives into the next generation.</li></ol>"
+            },
+            {
+                "question": "<h3>Genetic Algorithms</h3><h4>9. What is Mutation?</h4>",
+                "answer": "<h3>Genetic Algorithms</h3><h4>9. Mutation</h4><p>Mutation is the process of creating new genetic material. In GA/DE, it means creating a new candidate solution by applying small, random changes to one or more existing solutions. It is the primary mechanism for introducing variation and exploring the search space.</p>"
+            },
+            {
+                "question": "<h3>Genetic Algorithms</h3><h4>10. What is the mutation factor F in DE?</h4>",
+                "answer": "<h3>Genetic Algorithms</h3><h4>10. Mutation Factor F in DE</h4><p>The mutation factor, <strong>F</strong>, is a constant (e.g., in [0, 2]) that controls the amplification of the difference between vectors during mutation. In the common `de/rand/1` strategy, $v_i = x_{r1} + F \\cdot (x_{r2} - x_{r3})$. A larger F encourages exploration; a smaller F encourages exploitation.</p>"
+            },
+            {
+                "question": "<h3>Genetic Algorithms</h3><h4>11. What is Crossover?</h4>",
+                "answer": "<h3>Genetic Algorithms</h3><h4>11. Crossover</h4><p>Crossover (or recombination) is the process of creating a new 'offspring' solution (the trial vector) by combining parts of two or more 'parent' solutions. In DE, it involves mixing the parameters of the mutant vector with its corresponding parent vector.</p>"
+            },
+            {
+                "question": "<h3>Genetic Algorithms</h3><h4>12. What is the crossover rate CR in DE?</h4>",
+                "answer": "<h3>Genetic Algorithms</h3><h4>12. Crossover Rate CR in DE</h4><p>The crossover rate, <strong>CR</strong>, is a value in [0, 1] that controls the probability of a parameter in the new trial vector coming from the mutant vector (as opposed to the parent). A high CR promotes exploration, while a low CR promotes exploitation.</p>"
+            },
+            {
+                "question": "<h3>Genetic Algorithms</h3><h4>13. What is Selection?</h4>",
+                "answer": "<h3>Genetic Algorithms</h3><h4>13. Selection</h4><p>Selection is the process that determines which individuals (parents and offspring) will survive to form the population for the next generation. It's the step that drives the population towards higher fitness, mimicking 'survival of the fittest'.</p>"
+            },
+            {
+                "question": "<h3>Genetic Algorithms</h3><h4>14. What is Greedy Selection?</h4>",
+                "answer": "<h3>Genetic Algorithms</h3><h4>14. Greedy Selection</h4><p>This is the selection mechanism used in classic DE. The fitness of a new trial vector is compared to its parent. The selection is 'greedy' because it deterministically chooses whichever vector has the better fitness score to proceed to the next generation. There is no chance involved.</p>"
+            },
+            {
+                "question": "<h3>Genetic Algorithms</h3><h4>15. What is a Termination condition? Explain 3 strategies.</h4>",
+                "answer": "<h3>Genetic Algorithms</h3><h4>15. Termination Condition</h4><p>A termination condition stops the evolution process. Common strategies include:</p><ol><li><strong>Maximum Number of Generations:</strong> Stop after a predefined number of iterations (most common).</li><li><strong>Fitness Threshold:</strong> Stop when the best solution's fitness reaches a target value.</li><li><strong>No Improvement (Stagnation):</strong> Stop if the best fitness score has not improved for a set number of generations.</li></ol>"
+            },
+            {
+                "question": "<h3>Genetic Algorithms</h3><h4>16. Explain the different strategies for mutation in GA and DE.</h4>",
+                "answer": "<h3>Genetic Algorithms</h3><h4>16. Mutation Strategies in GA vs. DE</h4><ul><li><strong>In GA:</strong> Mutation is usually applied to a single individual. Examples include flipping a bit in a binary string or adding Gaussian noise to a real number.</li><li><strong>In DE:</strong> Mutation is fundamentally different. It uses the <em>differences between multiple individuals</em> in the population to create a new vector (e.g., $v_i = x_{r1} + F \\cdot (x_{r2} - x_{r3})$). This is why it's called 'Differential' Evolution.</li></ul>"
+            },
+            {
+                "question": "<h3>Genetic Algorithms</h3><h4>17. Explain the mutation strategies de/rand/1 and de/best/1 with a drawing.</h4>",
+                "answer": "<h3>Genetic Algorithms</h3><h4>17. DE Mutation Strategies Explained</h4><div class='row text-center'><div class='col-md-6'><h5>a) de/rand/1: $v_i = x_{r1} + F \\cdot (x_{r2} - x_{r3})$</h5><svg viewBox='0 0 150 100'><circle cx='30' cy='80' r='3' fill='blue'/><text x='30' y='95' font-size='10'>$x_{r1}$</text><circle cx='120' cy='50' r='3' fill='blue'/><text x='120' y='65' font-size='10'>$x_{r2}$</text><circle cx='80' cy='20' r='3' fill='blue'/><text x='80' y='15' font-size='10'>$x_{r3}$</text><line x1='80' y1='20' x2='120' y2='50' stroke='green' stroke-dasharray='2,2'/><path d='M 30 80 q 40 -40, 60 -40' stroke='red' stroke-dasharray='2,2' fill='none'/><circle cx='90' cy='40' r='3' fill='red' /><text x='95' y='35' font-size='10'>$v_i$</text></svg><p>This is a good general-purpose strategy emphasizing exploration.</p></div><div class='col-md-6'><h5>b) de/best/1: $v_i = x_{best} + F \\cdot (x_{r1} - x_{r2})$</h5><svg viewBox='0 0 150 100'><circle cx='30' cy='80' r='3' fill='orange'/><text x='30' y='95' font-size='10'>$x_{best}$</text><circle cx='120' cy='50' r='3' fill='blue'/><text x='120' y='65' font-size='10'>$x_{r1}$</text><circle cx='80' cy='20' r='3' fill='blue'/><text x='80' y='15' font-size='10'>$x_{r2}$</text><line x1='80' y1='20' x2='120' y2='50' stroke='green' stroke-dasharray='2,2'/><path d='M 30 80 q 40 -40, 60 -40' stroke='red' stroke-dasharray='2,2' fill='none'/><circle cx='90' cy='40' r='3' fill='red' /><text x='95' y='35' font-size='10'>$v_i$</text></svg><p>This is a more 'greedy' strategy focusing on exploitation around the current best solution.</p></div></div>"
+            },
+            {
+                "question": "<h3>Genetic Algorithms</h3><h4>18. Explain the crossover with an example in DE.</h4>",
+                "answer": "<h3>Genetic Algorithms</h3><h4>18. Crossover Example in DE</h4><p>Assume we have 5 variables, a crossover rate (CR) of 0.8:</p><ul><li><strong>Parent ($x_i$):</strong> `[10.1, 5.5, 30.2, 8.8, 15.0]`</li><li><strong>Mutant ($v_i$):</strong> `[12.5, 4.0, 28.9, 9.1, 12.4]`</li></ul><p>To create the Trial Vector ($u_i$), we iterate: for each gene, if `rand() <= CR`, take from Mutant, otherwise take from Parent.</p><ul><li>Gene 1: `rand() = 0.3 <= 0.8` -> Take from Mutant (12.5)</li><li>Gene 2: `rand() = 0.7 <= 0.8` -> Take from Mutant (4.0)</li><li>Gene 3: `rand() = 0.9 > 0.8` -> Take from Parent (30.2)</li><li>...and so on.</li></ul><p>Resulting <strong>Trial Vector ($u_i$)</strong> might be: `[12.5, 4.0, 30.2, 9.1, 12.4]`</p>"
+            },
+            {
+                "question": "<h3>Genetic Algorithms</h3><h4>19. Define exploration and exploitation. How can F and CR values be changed to achieve each?</h4>",
+                "answer": "<h3>Genetic Algorithms</h3><h4>19. Exploration vs. Exploitation</h4><ul><li><strong>Exploration:</strong> Searching wide areas of the problem space to find new, promising regions.</li><li><strong>Exploitation:</strong> Refining and improving solutions in a known good region of the search space.</li></ul><p><strong>Achieving with F and CR:</strong></p><ul><li><strong>High Exploration:</strong> Use high `F` (e.g., 0.8-1.0) and high `CR` (e.g., 0.9-1.0). This creates large, novel trial vectors.</li><li><strong>High Exploitation:</strong> Use low `F` (e.g., 0.2-0.5) and low `CR` (e.g., 0.1-0.3). This creates trial vectors very similar to existing good solutions, allowing for fine-tuning.</li></ul>"
+            },
+            {
+                "question": "<h3>Genetic Algorithms</h3><h4>20. Why is it important to adapt F and CR values over the generations?</h4>",
+                "answer": "<h3>Genetic Algorithms</h3><h4>20. Why Adapt F and CR Values</h4><p>Using fixed values for F and CR is often suboptimal because the ideal balance of exploration and exploitation changes during the search.</p><ul><li><strong>Early Generations:</strong> High exploration is needed to survey the search space. High F and CR are desirable.</li><li><strong>Late Generations:</strong> High exploitation is needed to fine-tune the best solutions found. Low F and CR are desirable.</li></ul><p>Therefore, <strong>adapting</strong> F and CR values (e.g., decreasing them over time) can significantly improve the algorithm's performance and robustness.</p>"
+            }
+        ];
+
+        // DOM Elements
+        const flashcard = document.getElementById('flashcard');
+        const questionEl = document.getElementById('card-question');
+        const answerEl = document.getElementById('card-answer');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const flipBtn = document.getElementById('flip-btn');
+        const progressBar = document.getElementById('progress-bar');
+
+        let currentCardIndex = 0;
+        let isFlipped = false;
+
+        function renderMath() {
+            if (window.renderMathInElement) {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        { left: '$$', right: '$$', display: true },
+                        { left: '$', right: '$', display: false },
+                        { left: '\\(', right: '\\)', display: false },
+                        { left: '\\[', right: '\\]', display: true }
+                    ],
+                    throwOnError: false
+                });
+            }
+        }
+
+        function updateCard() {
+            const card = flashcards[currentCardIndex];
+            questionEl.innerHTML = `<h5>Question ${currentCardIndex + 1} of ${flashcards.length}</h5><hr>${card.question}`;
+            answerEl.innerHTML = `<h5>Answer to Question ${currentCardIndex + 1}</h5><hr>${card.answer}`;
+
+            if (isFlipped) {
+                flashcard.classList.remove('is-flipped');
+                isFlipped = false;
+            }
+
+            renderMath();
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const progress = ((currentCardIndex + 1) / flashcards.length) * 100;
+            progressBar.style.width = `${progress}%`;
+            progressBar.setAttribute('aria-valuenow', progress);
+        }
+
+        // Event Listeners
+        flipBtn.addEventListener('click', () => {
+            isFlipped = !isFlipped;
+            flashcard.classList.toggle('is-flipped');
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentCardIndex < flashcards.length - 1) {
+                currentCardIndex++;
+                updateCard();
+            }
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if (currentCardIndex > 0) {
+                currentCardIndex--;
+                updateCard();
+            }
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') {
+                nextBtn.click();
+            } else if (e.key === 'ArrowLeft') {
+                prevBtn.click();
+            } else if (e.key === ' ') {
+                e.preventDefault(); // Prevent page scroll
+                flipBtn.click();
+            }
+        });
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', () => {
+            updateCard();
+        });
+
+    </script>
+</body>
+
+</html>
