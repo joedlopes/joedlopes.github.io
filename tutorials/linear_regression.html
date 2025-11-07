@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Understanding Linear Regression</title>
+
+    <!-- 1. Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- 2. Google Font: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <!-- 3. KaTeX for Math Rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"
+        xintegrity="sha384-n8MVd4RsNIU0KOVEMmgpdFPGHLnMMVHiyisBIlBb4MCRackPZqTWHIOvYMbHlkYx" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"
+        xintegrity="sha384-XjKyOOlGjKrxZSSFNjzccbKlxIVqQdPTIhBJ8jvlLGTbqagZJSB1SDE8dLConQGj"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+        xintegrity="sha384-+VBxd3r6XgURPlLJSytX1omGihG0hBXFDaL4vcKfIe4wJYqdSIfKYOFGndFsbNcJ"
+        crossorigin="anonymous"></script>
+
+    <!-- 4. Chart.js for Interactive Plot -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    <!-- 5. Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+
+    <!-- Internal Styles -->
+    <style>
+        /* Custom styles for range sliders */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            @apply bg-gray-700 rounded-lg;
+            outline: none;
+            opacity: 0.9;
+            transition: opacity .2s;
+        }
+
+        input[type="range"]:hover {
+            opacity: 1;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            @apply bg-blue-500 rounded-full;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            @apply bg-blue-500 rounded-full;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-900 text-gray-200 font-sans flex items-center justify-center min-h-screen p-4">
+
+    <div class="max-w-4xl w-full">
+        <!-- Slideshow Container -->
+        <div id="slideshow-container"
+            class="bg-gray-800 rounded-lg shadow-2xl p-6 sm:p-10 transition-all duration-300 min-h-[500px] flex flex-col justify-between">
+
+            <!-- Area where slides will be dynamically shown -->
+            <div id="slides-area" class="flex-grow">
+
+                <!-- Slide 1: Introduction -->
+                <div class="slide">
+                    <h2 class="text-2xl sm:text-3xl font-bold text-blue-300 mb-6">1. What is Linear Regression?</h2>
+                    <p class="text-base sm:text-lg text-gray-200 mb-4 leading-relaxed">
+                        At its core, linear regression is a statistical method used to find a relationship between
+                        variables.
+                    </p>
+                    <p class="text-base sm:text-lg text-gray-200 mb-4 leading-relaxed">
+                        Imagine you have a set of data points, like the relationship between "hours studied" and "test
+                        score". Linear regression helps us answer: "Can we predict a student's score based on how many
+                        hours they studied?"
+                    </p>
+                    <p class="text-base sm:text-lg text-gray-200 mb-4 leading-relaxed">
+                        It works by finding the "line of best fit" that most closely represents the data.
+                    </p>
+                </div>
+
+                <!-- Slide 2: The Goal -->
+                <div class="slide hidden">
+                    <h2 class="text-2xl sm:text-3xl font-bold text-blue-300 mb-6">2. The Goal: The "Best Fit" Line</h2>
+                    <p class="text-base sm:text-lg text-gray-200 mb-4 leading-relaxed">
+                        The primary goal is to fit a single straight line to our data points. This line acts as a model.
+                    </p>
+                    <p class="text-base sm:text-lg text-gray-200 mb-4 leading-relaxed">
+                        Why a line? Because it's simple and gives us a clear formula. Once we have this line, we can
+                        plug in a new value (like "5 hours studied") and our model will *predict* an output (like "a
+                        score of 85").
+                    </p>
+                    <p class="text-base sm:text-lg text-gray-200 mb-4 leading-relaxed">
+                        The challenge is finding the *best possible* line out of all infinite possibilities.
+                    </p>
+                </div>
+
+                <!-- Slide 3: The Model -->
+                <div class="slide hidden">
+                    <h2 class="text-2xl sm:text-3xl font-bold text-blue-300 mb-6">3. The Model: A Simple Formula</h2>
+                    <p class="text-base sm:text-lg text-gray-200 mb-4 leading-relaxed">
+                        In machine learning, this "line" is our model. The formula for any straight line is:
+                    </p>
+                    <div class="text-center text-3xl my-6 p-4 bg-gray-900 rounded-lg">
+                        <!-- KaTeX renders this block -->
+                        $$ f(x) = wx + b $$
+                    </div>
+                    <ul class="text-base sm:text-lg text-gray-200 space-y-3">
+                        <li>
+                            <b class="text-yellow-400">$ w $ (Weight):</b> This is the <b>slope</b> of the line. It
+                            controls how steep the line is. It represents how much $ f(x) $ (our prediction) changes for
+                            every one-unit increase in $ x $.
+                        </li>
+                        <li>
+                            <b class="text-green-400">$ b $ (Bias):</b> This is the <b>y-intercept</b>. It controls
+                            where the line hits the vertical y-axis. It's a base value for our prediction, even if $ x $
+                            is zero.
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Slide 4: Interactive Demo -->
+                <div class="slide hidden">
+                    <h2 class="text-2xl sm:text-3xl font-bold text-blue-300 mb-6">4. Interactive Demo: Find the Best
+                        Fit!</h2>
+                    <div class="flex flex-col lg:flex-row gap-6 items-start">
+                        <!-- Chart Area -->
+                        <div class="relative w-full lg:w-2/3 h-64 sm:h-96 bg-gray-900 p-2 rounded-lg">
+                            <canvas id="regressionChart"></canvas>
+                        </div>
+
+                        <!-- Controls Area -->
+                        <div class="w-full lg:w-1/3 space-y-6">
+                            <div>
+                                <label for="slider-w"
+                                    class="flex justify-between text-lg font-semibold text-yellow-400">
+                                    Weight (w)
+                                    <span id="value-w" class="text-white">1.00</span>
+                                </label>
+                                <input id="slider-w" type="range" min="0" max="2" step="0.01" value="1.0" class="mt-2">
+                            </div>
+                            <div>
+                                <label for="slider-b" class="flex justify-between text-lg font-semibold text-green-400">
+                                    Bias (b)
+                                    <span id="value-b" class="text-white">1.00</span>
+                                </label>
+                                <input id="slider-b" type="range" min="0" max="5" step="0.01" value="1.0" class="mt-2">
+                            </div>
+                            <div class="text-xl text-center bg-gray-700 p-4 rounded-lg">
+                                Current MSE:
+                                <span id="mse-value" class="font-bold text-yellow-300 block text-3xl mt-1">...</span>
+                            </div>
+                            <p class="text-sm text-gray-400">
+                                Adjust 'w' and 'b' to make the line fit the data and minimize the Mean Squared Error
+                                (MSE). The dashed red lines show the "error" for each point.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 5: Measuring Error -->
+                <div class="slide hidden">
+                    <h2 class="text-2xl sm:text-3xl font-bold text-blue-300 mb-6">5. Measuring Error (Residuals)</h2>
+                    <p class="text-base sm:text-lg text-gray-200 mb-4 leading-relaxed">
+                        To find the "best" line, we must first define what "best" means. "Best" means the line with the
+                        *least amount of error*.
+                    </p>
+                    <p class="text-base sm:text-lg text-gray-200 mb-4 leading-relaxed">
+                        For any single data point, the error is the vertical distance between the actual data point and
+                        the point on our prediction line. This is called the <b>residual</b>.
+                    </p>
+                    <div class="text-center text-xl my-4 p-4 bg-gray-700 rounded-lg font-mono">
+                        Error = Actual Value - Predicted Value
+                    </div>
+                    <p class="text-base sm:text-lg text-gray-200 mb-4 leading-relaxed">
+                        We can't just add these errors up. Why? Because some errors will be positive (line is too low)
+                        and some will be negative (line is too high), and they would cancel each other out.
+                    </p>
+                    <p class="text-base sm:text-lg text-gray-200 mb-4 leading-relaxed">
+                        To fix this, we <b>square</b> each error. This makes all errors positive and heavily penalizes
+                        large mistakes.
+                    </p>
+                </div>
+
+                <!-- Slide 6: The Loss Function (MSE) -->
+                <div class="slide hidden">
+                    <h2 class="text-2xl sm:text-3xl font-bold text-blue-300 mb-6">6. The Loss Function: MSE</h2>
+                    <p class="text-base sm:text-lg text-gray-200 mb-4 leading-relaxed">
+                        We combine all these squared errors into a single number called a <b>Loss Function</b>. For
+                        linear regression, we use the <b>Mean Squared Error (MSE)</b>.
+                    </p>
+                    <p class="text-base sm:text-lg text-gray-200 mb-4 leading-relaxed">
+                        It's just a formula that says: "Square all the errors, add them up, and take the average."
+                    </p>
+                    <div class="text-xl sm:text-2xl my-6 text-center overflow-x-auto p-4 bg-gray-900 rounded-lg">
+                        <!-- KaTeX renders this block -->
+                        $$ \text{MSE} = \frac{1}{n} \sum_{i=1}^{n} (y_i - (wx_i + b))^2 $$
+                    </div>
+                    <ul class="text-base sm:text-lg text-gray-200 space-y-3">
+                        <li>$ \frac{1}{n} $: The <b>"Mean"</b> (average) — divide by $ n $, the number of data points.
+                        </li>
+                        <li>$ \sum $: The <b>"Sum"</b> — add up the errors for all points from $ i=1 $ to $ n $.</li>
+                        <li>$ y_i $: The <b>"Actual"</b> value (the blue dot).</li>
+                        <li>$ (wx_i + b) $: The <b>"Predicted"</b> value (the point on the red line).</li>
+                        <li>$ (...) ^2 $: The <b>"Squared"</b> part, to make all errors positive.</li>
+                    </ul>
+                </div>
+
+                <!-- Slide 7: Summary -->
+                <div class="slide hidden">
+                    <h2 class="text-2xl sm:text-3xl font-bold text-blue-300 mb-6">7. Summary: Goal Revisited</h2>
+                    <p class="text-base sm:text-lg text-gray-200 mb-4 leading-relaxed">
+                        The entire goal of "training" a linear regression model is to find the *exact* values for $ w $
+                        and $ b $ that result in the <b>lowest possible MSE</b>.
+                    </p>
+                    <p class="text-base sm:text-lg text-gray-200 mb-4 leading-relaxed">
+                        If you could try every possible combination of $ w $ and $ b $, you would find one pair that
+                        produces the minimum error. This is an <b>optimization problem</b>.
+                    </p>
+                    <p class="text-base sm:text-lg text-gray-200 mb-4 leading-relaxed">
+                        Go back to the interactive demo and see how low you can get the MSE!
+                    </p>
+                </div>
+
+                <!-- Slide 8: Next Steps -->
+                <div class="slide hidden">
+                    <h2 class="text-2xl sm:text-3xl font-bold text-blue-300 mb-6">8. Next Steps: How do we find the
+                        minimum?</h2>
+                    <p class="text-base sm:text-lg text-gray-200 mb-4 leading-relaxed">
+                        Trying every combination of $ w $ and $ b $ would take forever. So, how do computers *find* the
+                        minimum MSE?
+                    </p>
+                    <p class="text-base sm:text-lg text-gray-200 mb-4 leading-relaxed">
+                        They use a clever algorithm called <b>Gradient Descent</b>.
+                    </p>
+                    <p class="text-base sm:text-lg text-gray-200 mb-4 leading-relaxed">
+                        Using calculus, this algorithm calculates the "slope" (or gradient) of the loss function. This
+                        slope tells $ w $ and $ b $ which direction to "step" (up or down) to reduce the error. It
+                        repeatedly takes small steps "downhill" until it finds the bottom of the "valley"—the minimum
+                        possible MSE.
+                    </p>
+                    <p class="text-base sm:text-lg text-gray-200 mb-4 leading-relaxed font-bold">
+                        Congratulations! You now understand the core concepts of Linear Regression.
+                    </p>
+                </div>
+
+            </div>
+
+            <!-- Navigation Controls -->
+            <div id="navigation" class="flex justify-between items-center pt-6 mt-6 border-t border-gray-700">
+                <button id="prev-btn"
+                    class="px-6 py-2 rounded-lg font-semibold bg-gray-600 hover:bg-gray-500 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    Previous
+                </button>
+                <span id="slide-counter" class="text-gray-400 text-sm font-medium">
+                    Slide 1 / 8
+                </span>
+                <button id="next-btn"
+                    class="px-6 py-2 rounded-lg font-semibold bg-blue-600 hover:bg-blue-500 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    Next
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            // --- 1. KaTeX Auto-Rendering ---
+            // This finds all math expressions and renders them.
+            try {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        { left: '$$', right: '$$', display: true },
+                        { left: '$', right: '$', display: false },
+                    ]
+                });
+            } catch (error) {
+                console.error("Error rendering KaTeX:", error);
+            }
+
+            // --- 2. Slideshow Navigation ---
+            const slides = document.querySelectorAll('.slide');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const slideCounter = document.getElementById('slide-counter');
+            let currentSlide = 0;
+            const totalSlides = slides.length;
+
+            function showSlide(n) {
+                // Hide all slides
+                slides.forEach(slide => slide.classList.add('hidden'));
+
+                // Show the current slide
+                slides[n].classList.remove('hidden');
+
+                // Update counter
+                slideCounter.textContent = `Slide ${n + 1} / ${totalSlides}`;
+
+                // Update button states
+                prevBtn.disabled = (n === 0);
+                nextBtn.disabled = (n === totalSlides - 1);
+            }
+
+            nextBtn.addEventListener('click', () => {
+                if (currentSlide < totalSlides - 1) {
+                    currentSlide++;
+                    showSlide(currentSlide);
+                }
+            });
+
+            prevBtn.addEventListener('click', () => {
+                if (currentSlide > 0) {
+                    currentSlide--;
+                    showSlide(currentSlide);
+                }
+            });
+
+            // Show the first slide initially
+            showSlide(currentSlide);
+
+            // --- 3. Interactive Chart.js Demo ---
+
+            // Check if the chart canvas exists (it's on slide 4)
+            const ctx = document.getElementById('regressionChart');
+            if (!ctx) return;
+
+            // DOM elements for controls
+            const sliderW = document.getElementById('slider-w');
+            const valueW = document.getElementById('value-w');
+            const sliderB = document.getElementById('slider-b');
+            const valueB = document.getElementById('value-b');
+            const mseValue = document.getElementById('mse-value');
+
+            // Our sample data points
+            const sampleData = [
+                { x: 1, y: 3 },
+                { x: 2, y: 5 },
+                { x: 3, y: 4.5 },
+                { x: 4, y: 7 },
+                { x: 5, y: 6.5 },
+                { x: 6, y: 9 },
+                { x: 7, y: 8.5 }
+            ];
+
+            // Helper function: Predict y given x, w, b
+            function predict(x, w, b) {
+                return w * x + b;
+            }
+
+            // Helper function: Calculate Mean Squared Error
+            function calculateMSE(w, b) {
+                let sumSquaredError = 0;
+                sampleData.forEach(point => {
+                    const prediction = predict(point.x, w, b);
+                    const error = point.y - prediction;
+                    sumSquaredError += error * error;
+                });
+                return sumSquaredError / sampleData.length;
+            }
+
+            // Initialize the chart
+            let myChart = new Chart(ctx.getContext('2d'), {
+                type: 'scatter', // Base type
+                data: {
+                    datasets: [] // Will be populated by updateChart()
+                },
+                options: {
+                    scales: {
+                        x: {
+                            min: 0,
+                            max: 8,
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            ticks: { color: '#cbd5e1' }
+                        },
+                        y: {
+                            min: 0,
+                            max: 12,
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            ticks: { color: '#cbd5e1' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false }
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // The MAIN function: updates chart, MSE, and sliders
+            function updateChart() {
+                const w = parseFloat(sliderW.value);
+                const b = parseFloat(sliderB.value);
+
+                // Update slider text values
+                valueW.textContent = w.toFixed(2);
+                valueB.textContent = b.toFixed(2);
+
+                // --- 1. Calculate data for the prediction line ---
+                // We just need two points to draw a line (x=0 and x=8)
+                const lineData = [
+                    { x: 0, y: predict(0, w, b) },
+                    { x: 8, y: predict(8, w, b) }
+                ];
+
+                // --- 2. Calculate data for residual (error) lines ---
+                const residualDatasets = [];
+                sampleData.forEach(point => {
+                    const predY = predict(point.x, w, b);
+                    // Each residual is its own 'line' dataset
+                    residualDatasets.push({
+                        type: 'line', // Override base type
+                        data: [
+                            { x: point.x, y: point.y },   // Start at the data point
+                            { x: point.x, y: predY }      // End at the prediction line
+                        ],
+                        borderColor: 'rgba(255, 99, 132, 0.5)',
+                        borderWidth: 2,
+                        borderDash: [5, 5], // Make it dashed
+                        fill: false,
+                        pointRadius: 0 // No dots on the residual lines
+                    });
+                });
+
+                // --- 3. Calculate and display MSE ---
+                const mse = calculateMSE(w, b);
+                mseValue.textContent = mse.toFixed(4);
+
+                // --- 4. Update the chart's datasets ---
+                myChart.data.datasets = [
+                    // Dataset 0: The actual data points
+                    {
+                        type: 'scatter',
+                        label: 'Data',
+                        data: sampleData,
+                        backgroundColor: 'rgb(59, 130, 246)',
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    },
+                    // Dataset 1: The prediction line
+                    {
+                        type: 'line', // Override base type
+                        label: 'Prediction',
+                        data: lineData,
+                        borderColor: 'rgb(234, 179, 8)', // Yellow
+                        borderWidth: 3,
+                        fill: false,
+                        tension: 0,
+                        pointRadius: 0
+                    },
+                    // Spread the ...residualDatasets array to add all of them
+                    ...residualDatasets
+                ];
+
+                // Redraw the chart without any animation
+                myChart.update('none');
+            }
+
+            // Add event listeners to sliders
+            sliderW.addEventListener('input', updateChart);
+            sliderB.addEventListener('input', updateChart);
+
+            // Initial chart draw
+            updateChart();
+        });
+    </script>
+</body>
+
+</html>
