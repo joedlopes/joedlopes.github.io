@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Linear Regression — Interactive Slideshow</title>
+
+    <!-- Inter font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { inter: ['Inter', 'ui-sans-serif', 'system-ui'] },
+                }
+            }
+        }
+    </script>
+
+    <!-- KaTeX -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}]});"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+
+    <style>
+        html,
+        body {
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-900 text-gray-200 font-inter selection:bg-indigo-600 selection:text-white">
+    <!-- container -->
+    <div class="min-h-screen flex flex-col">
+        <!-- header -->
+        <header class="w-full border-b border-gray-800/70">
+            <div class="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between gap-4">
+                <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight">
+                    Linear Regression — Learn by Doing
+                </h1>
+                <div class="text-xs sm:text-sm text-gray-400">
+                    Built with Tailwind · KaTeX · Chart.js
+                </div>
+            </div>
+        </header>
+
+        <!-- slides wrapper -->
+        <main class="flex-1">
+            <div id="slides" class="mx-auto max-w-4xl px-4 py-8 sm:py-12 space-y-10">
+
+                <!-- Slide 1: Intro -->
+                <section class="slide">
+                    <div class="bg-gray-800/60 rounded-2xl p-6 sm:p-10 shadow-xl ring-1 ring-gray-700/40">
+                        <h2 class="text-2xl sm:text-3xl font-bold mb-4">What is Linear Regression?</h2>
+                        <p class="text-gray-300 leading-relaxed">
+                            Linear regression is a simple, powerful method to model the relationship between an input
+                            \(x\) and an output \(y\) using a straight line. We assume:
+                            \[
+                            \text{Predicted } y = f(x) = w\,x + b
+                            \]
+                            and choose \(w\) and \(b\) so the line fits the data “as well as possible.”
+                        </p>
+                    </div>
+                </section>
+
+                <!-- Slide 2: The goal -->
+                <section class="slide hidden">
+                    <div class="bg-gray-800/60 rounded-2xl p-6 sm:p-10 shadow-xl ring-1 ring-gray-700/40">
+                        <h2 class="text-2xl sm:text-3xl font-bold mb-4">The Goal</h2>
+                        <p class="text-gray-300 leading-relaxed">
+                            Our objective is to fit the <span class="font-semibold">best straight line</span> through
+                            the data:
+                            minimize the mismatch between actual \(y\) values and the line’s predictions \(f(x)\).
+                        </p>
+                    </div>
+                </section>
+
+                <!-- Slide 3: The model -->
+                <section class="slide hidden">
+                    <div class="bg-gray-800/60 rounded-2xl p-6 sm:p-10 shadow-xl ring-1 ring-gray-700/40">
+                        <h2 class="text-2xl sm:text-3xl font-bold mb-4">The Model: A Single Neuron</h2>
+                        <p class="text-gray-300 leading-relaxed mb-4">
+                            We can view linear regression as a one-neuron model:
+                            \[
+                            f(x) = w\,x + b
+                            \]
+                        </p>
+                        <ul class="list-disc pl-6 space-y-2 text-gray-300">
+                            <li><span class="font-semibold">\(w\) (Weight):</span> controls the slope (how fast \(y\)
+                                changes with \(x\)).</li>
+                            <li><span class="font-semibold">\(b\) (Bias):</span> shifts the line up/down.</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Slide 4: Interactive Demo (F1 tire degradation example) -->
+                <section class="slide hidden">
+                    <div class="bg-gray-800/60 rounded-2xl p-6 sm:p-10 shadow-xl ring-1 ring-gray-700/40">
+                        <div class="flex items-center justify-between gap-4 mb-2">
+                            <h2 class="text-2xl sm:text-3xl font-bold">Interactive Demo: Fit the Line</h2>
+                            <span class="text-xs sm:text-sm text-gray-400">F1 — Medium tire degradation (São Paulo GP,
+                                Interlagos)</span>
+                        </div>
+                        <p class="text-gray-300 mb-5">
+                            Dataset: average of <span class="font-semibold">20 cars</span>, each point is <span
+                                class="font-semibold">lap number</span> (\(x\)) vs.
+                            <span class="font-semibold">lap time delta</span> (\(y\), seconds slower than fresh tire).
+                            Use the sliders to choose \(w\) and \(b\).
+                            Watch residual errors and MSE update live.
+                        </p>
+
+                        <!-- chart -->
+                        <div class="bg-gray-900 rounded-xl ring-1 ring-gray-700/50 p-3 sm:p-4 mb-6">
+                            <canvas id="demoChart" class="w-full h-[320px] sm:h-[380px]"></canvas>
+                        </div>
+
+                        <!-- controls -->
+                        <div class="grid sm:grid-cols-2 gap-4 sm:gap-6">
+                            <div class="bg-gray-900 rounded-xl ring-1 ring-gray-700/50 p-4">
+                                <label class="block text-sm text-gray-400 mb-2" for="wSlider">Weight \(w\)
+                                    (s/lap)</label>
+                                <input id="wSlider" type="range" min="-0.20" max="0.20" value="0.05" step="0.005"
+                                    class="w-full accent-indigo-500">
+                                <div class="mt-2 text-sm">Current \(w\): <span id="wVal"
+                                        class="font-semibold text-indigo-300">0.05</span></div>
+                            </div>
+                            <div class="bg-gray-900 rounded-xl ring-1 ring-gray-700/50 p-4">
+                                <label class="block text-sm text-gray-400 mb-2" for="bSlider">Bias \(b\) (s)</label>
+                                <input id="bSlider" type="range" min="-1.00" max="1.00" value="0.20" step="0.01"
+                                    class="w-full accent-indigo-500">
+                                <div class="mt-2 text-sm">Current \(b\): <span id="bVal"
+                                        class="font-semibold text-indigo-300">0.20</span></div>
+                            </div>
+                        </div>
+
+                        <!-- mse -->
+                        <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                            <div class="text-sm sm:text-base">
+                                MSE (Mean Squared Error): <span id="mseVal"
+                                    class="font-semibold text-emerald-300">—</span>
+                            </div>
+                            <div class="text-xs sm:text-sm text-gray-400">
+                                Tip: Increase \(w\) if lap times grow faster with lap number; adjust \(b\) to match
+                                early-lap offset.
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Slide 5: Measuring error -->
+                <section class="slide hidden">
+                    <div class="bg-gray-800/60 rounded-2xl p-6 sm:p-10 shadow-xl ring-1 ring-gray-700/40">
+                        <h2 class="text-2xl sm:text-3xl font-bold mb-4">Measuring Error</h2>
+                        <p class="text-gray-300 leading-relaxed">
+                            For each point \((x_i, y_i)\), the prediction is \( \hat{y}_i = f(x_i) = w x_i + b \).
+                            The point-wise error is:
+                            \[
+                            e_i = y_i - \hat{y}_i \quad\text{(Actual − Predicted)}
+                            \]
+                            Residual lines visualize \(e_i\) as vertical distances from points to the model line.
+                        </p>
+                    </div>
+                </section>
+
+                <!-- Slide 6: MSE -->
+                <section class="slide hidden">
+                    <div class="bg-gray-800/60 rounded-2xl p-6 sm:p-10 shadow-xl ring-1 ring-gray-700/40">
+                        <h2 class="text-2xl sm:text-3xl font-bold mb-4">The Loss Function: MSE</h2>
+                        <p class="text-gray-300 leading-relaxed mb-4">
+                            We aggregate errors with the <span class="font-semibold">Mean Squared Error</span>:
+                        </p>
+                        <p class="text-center text-lg sm:text-xl mb-4">
+                            \[
+                            \mathrm{MSE}(w,b) \;=\; \frac{1}{N}\sum_{i=1}^{N}\bigl(y_i - (w x_i + b)\bigr)^{2}
+                            \]
+                        </p>
+                        <ul class="list-disc pl-6 space-y-2 text-gray-300">
+                            <li><span class="font-semibold">Mean:</span> average across all \(N\) points.</li>
+                            <li><span class="font-semibold">Squared:</span> penalizes large errors more strongly.</li>
+                            <li><span class="font-semibold">Error:</span> the residual \(y_i - \hat{y}_i\).</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Slide 7: Summary -->
+                <section class="slide hidden">
+                    <div class="bg-gray-800/60 rounded-2xl p-6 sm:p-10 shadow-xl ring-1 ring-gray-700/40">
+                        <h2 class="text-2xl sm:text-3xl font-bold mb-4">Summary: Goal Revisited</h2>
+                        <p class="text-gray-300 leading-relaxed">
+                            Training linear regression means finding \(w\) and \(b\) that <span
+                                class="font-semibold">minimize MSE</span>.
+                            In the F1 tire example, a good fit estimates how lap times degrade with laps; teams can
+                            compare MSE across stints to judge whether the tire has degraded enough to pit.
+                        </p>
+                    </div>
+                </section>
+
+                <!-- Slide 8: Next steps -->
+                <section class="slide hidden">
+                    <div class="bg-gray-800/60 rounded-2xl p-6 sm:p-10 shadow-xl ring-1 ring-gray-700/40">
+                        <h2 class="text-2xl sm:text-3xl font-bold mb-4">Next Steps: Gradient Descent</h2>
+                        <p class="text-gray-300 leading-relaxed">
+                            How do we actually find the best \(w\) and \(b\)? A common choice is
+                            <span class="font-semibold">Gradient Descent</span>, which iteratively updates parameters in
+                            the direction
+                            that reduces MSE the most. This general idea powers many machine-learning models beyond
+                            linear regression.
+                        </p>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+
+        <!-- nav -->
+        <footer class="border-t border-gray-800/70">
+            <div
+                class="mx-auto max-w-6xl px-4 py-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                <div class="text-sm text-gray-400 order-2 sm:order-1">
+                    Slide <span id="slideIndex" class="font-semibold text-gray-200">1</span>/<span
+                        id="slideCount">8</span>
+                </div>
+                <div class="flex gap-3 order-1 sm:order-2">
+                    <button id="prevBtn"
+                        class="px-4 py-2 rounded-xl bg-gray-800 text-gray-200 ring-1 ring-gray-700 hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed">
+                        ← Previous
+                    </button>
+                    <button id="nextBtn" class="px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-500">
+                        Next →
+                    </button>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // -------- Slideshow logic --------
+        const slides = Array.from(document.querySelectorAll('.slide'));
+        const slideIndexEl = document.getElementById('slideIndex');
+        const slideCountEl = document.getElementById('slideCount');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        slideCountEl.textContent = slides.length;
+        let current = 0;
+
+        function showSlide(i) {
+            current = Math.max(0, Math.min(slides.length - 1, i));
+            slides.forEach((s, idx) => s.classList.toggle('hidden', idx !== current));
+            slideIndexEl.textContent = (current + 1);
+            prevBtn.disabled = current === 0;
+            nextBtn.textContent = (current === slides.length - 1) ? 'Restart ↺' : 'Next →';
+
+            // Re-render math (in case of dynamic navigation)
+            if (window.renderMathInElement) {
+                renderMathInElement(slides[current], {
+                    delimiters: [
+                        { left: '$$', right: '$$', display: true },
+                        { left: '\\[', right: '\\]', display: true },
+                        { left: '\\(', right: '\\)', display: false }
+                    ]
+                });
+            }
+
+            // Lazy-init chart on the interactive slide (index 3)
+            if (current === 3 && !chartInited) {
+                initInteractive();
+            }
+            // If restarting on last slide
+            if (current === slides.length - 1 && nextBtn.dataset.restartBound !== '1') {
+                nextBtn.dataset.restartBound = '1';
+            }
+        }
+
+        prevBtn.addEventListener('click', () => showSlide(current - 1));
+        nextBtn.addEventListener('click', () => {
+            if (current === slides.length - 1) {
+                // restart
+                showSlide(0);
+            } else {
+                showSlide(current + 1);
+            }
+        });
+        showSlide(0);
+
+        // -------- Interactive Demo (Chart.js) --------
+        const ctx = document.getElementById('demoChart');
+        const wSlider = document.getElementById('wSlider');
+        const bSlider = document.getElementById('bSlider');
+        const wVal = document.getElementById('wVal');
+        const bVal = document.getElementById('bVal');
+        const mseVal = document.getElementById('mseVal');
+
+        let chart, chartInited = false;
+
+        // Generate a synthetic F1 medium tire degradation dataset:
+        // x: lap number (1..20), y: lap time delta vs fresh (seconds), trend ~= 0.045x + 0.20 + noise
+        function generateF1Data() {
+            const pts = [];
+            const N = 20;
+            for (let i = 1; i <= N; i++) {
+                const noise = (Math.random() - 0.5) * 0.15; // ±0.075s noise
+                const y = 0.045 * i + 0.20 + noise;
+                pts.push({ x: i, y });
+            }
+            return pts;
+        }
+
+        const points = generateF1Data();
+
+        function computePrediction(x, w, b) {
+            return w * x + b;
+        }
+
+        function computeMSE(data, w, b) {
+            let sum = 0;
+            for (const p of data) {
+                const yhat = computePrediction(p.x, w, b);
+                const e = p.y - yhat;
+                sum += e * e;
+            }
+            return sum / data.length;
+        }
+
+        // Build a line dataset from min..max x
+        function predictionLineDataset(w, b) {
+            const xs = points.map(p => p.x);
+            const minX = Math.min(...xs);
+            const maxX = Math.max(...xs);
+            return [
+                { x: minX, y: computePrediction(minX, w, b) },
+                { x: maxX, y: computePrediction(maxX, w, b) }
+            ];
+        }
+
+        // Custom plugin to draw dashed residuals
+        const ResidualsPlugin = {
+            id: 'residuals',
+            afterDatasetsDraw(chart, args, pluginOptions) {
+                const { ctx, scales } = chart;
+                const xScale = scales.x;
+                const yScale = scales.y;
+                const w = currentW;
+                const b = currentB;
+
+                ctx.save();
+                ctx.setLineDash([6, 6]);
+                ctx.lineWidth = 1.5;
+                ctx.strokeStyle = getComputedStyle(document.documentElement)
+                    .getPropertyValue('--residual-color') || 'rgba(244,114,182,0.9)'; // fallback pink-ish
+
+                for (const p of points) {
+                    const xPix = xScale.getPixelForValue(p.x);
+                    const yPixActual = yScale.getPixelForValue(p.y);
+                    const yPred = computePrediction(p.x, w, b);
+                    const yPixPred = yScale.getPixelForValue(yPred);
+
+                    ctx.beginPath();
+                    ctx.moveTo(xPix, yPixActual);
+                    ctx.lineTo(xPix, yPixPred);
+                    ctx.stroke();
+                }
+                ctx.restore();
+            }
+        };
+
+        let currentW = parseFloat(wSlider.value);
+        let currentB = parseFloat(bSlider.value);
+
+        function initInteractive() {
+            if (!ctx) return;
+
+            const dataScatter = {
+                label: 'Average of 20 cars (lap vs Δtime)',
+                data: points,
+                showLine: false,
+                pointRadius: 4,
+                pointHoverRadius: 5
+            };
+
+            const dataLine = {
+                label: 'Prediction line f(x)=wx+b',
+                data: predictionLineDataset(currentW, currentB),
+                showLine: true,
+                pointRadius: 0,
+                borderWidth: 2
+            };
+
+            chart = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [dataScatter, dataLine]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            title: { display: true, text: 'Lap number', color: '#cbd5e1' },
+                            ticks: { color: '#94a3b8' },
+                            grid: { color: 'rgba(148,163,184,0.12)' }
+                        },
+                        y: {
+                            title: { display: true, text: 'Lap time Δ vs fresh (s)', color: '#cbd5e1' },
+                            ticks: { color: '#94a3b8' },
+                            grid: { color: 'rgba(148,163,184,0.12)' }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: { color: '#e2e8f0' }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => `(${ctx.parsed.x.toFixed(0)}, ${ctx.parsed.y.toFixed(3)} s)`
+                            }
+                        }
+                    },
+                    elements: {
+                        point: { backgroundColor: 'rgba(59,130,246,0.9)' }, // blue points
+                        line: { borderColor: 'rgba(16,185,129,0.9)' }        // emerald line
+                    }
+                },
+                plugins: [ResidualsPlugin]
+            });
+
+            updateReadoutsAndMSE();
+            attachSliderHandlers();
+            chartInited = true;
+        }
+
+        function updatePredictionLine() {
+            const lineDs = chart.data.datasets[1];
+            lineDs.data = predictionLineDataset(currentW, currentB);
+            chart.update();
+        }
+
+        function updateReadoutsAndMSE() {
+            wVal.textContent = currentW.toFixed(3);
+            bVal.textContent = currentB.toFixed(3);
+            const mse = computeMSE(points, currentW, currentB);
+            mseVal.textContent = mse.toFixed(4);
+        }
+
+        function attachSliderHandlers() {
+            wSlider.addEventListener('input', () => {
+                currentW = parseFloat(wSlider.value);
+                updateReadoutsAndMSE();
+                updatePredictionLine();
+            });
+            bSlider.addEventListener('input', () => {
+                currentB = parseFloat(bSlider.value);
+                updateReadoutsAndMSE();
+                updatePredictionLine();
+            });
+        }
+
+        // Accessible keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') { nextBtn.click(); }
+            if (e.key === 'ArrowLeft') { prevBtn.click(); }
+        });
+
+        // Define a CSS var for residuals color to adapt dark UI easily
+        const style = document.createElement('style');
+        style.innerHTML = `:root{ --residual-color: rgba(244,114,182,0.9); }`;
+        document.head.appendChild(style);
+    </script>
+</body>
+
+</html>
